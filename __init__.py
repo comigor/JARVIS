@@ -27,6 +27,7 @@ from homeassistant.helpers import config_validation as cv, intent, selector, tem
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import ulid
 import json
+import traceback
 
 from .const import (
     CONF_CHAT_MODEL,
@@ -197,15 +198,12 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         ]
 
         try:
-            if response[-2:] == ",}":
-                response = response[-2:] + "}"
-
+            response = response.replace(",}", "}")
             response_json = json.loads(response)
             comment = response_json["comment"]
             del response_json['comment']
-
         except Exception as err:
-            comment = f"Unable to parse: {response} \n Error: {err}"
+            comment = f"Unable to parse: {response}\nError: {err}\n{traceback.format_exc()}"
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_speech(comment)
 
@@ -226,7 +224,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         except Exception as err:
             comment = f"""Unable to execute: {response_json["command"]['domain'], 
                     response_json["command"]['service'],  
-                   response_json["command"]['data']} \n Error: {err}"""
+                   response_json["command"]['data']} \n Error: {err}\n{traceback.format_exc()}"""
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_speech(comment)
 
