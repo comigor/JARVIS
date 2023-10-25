@@ -28,23 +28,61 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import ulid
 
 from .const import (
+    CONF_CHAT_MODEL,
     CONF_MAX_TOKENS,
-    CONF_MODEL,
     CONF_PROMPT,
     CONF_TEMPERATURE,
     CONF_TOP_P,
+    DEFAULT_CHAT_MODEL,
     DEFAULT_MAX_TOKENS,
-    DEFAULT_MODEL,
     DEFAULT_PROMPT,
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_P,
-    HOME_INFO_TEMPLATE,
     DOMAIN,
 )
 
 _LOGGER = logging.getLogger(__name__)
+SERVICE_GENERATE_IMAGE = "generate_image"
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up OpenAI Conversation."""
+
+    async def render_image(call: ServiceCall) -> ServiceResponse:
+        """Render an image with dall-e."""
+        try:
+            response = await openai.Image.acreate(
+                api_key=hass.data[DOMAIN][call.data["config_entry"]],
+                prompt=call.data["prompt"],
+                n=1,
+                size=f'{call.data["size"]}x{call.data["size"]}',
+            )
+        except error.OpenAIError as err:
+            raise HomeAssistantError(f"Error generating image: {err}") from err
+
+        return response["data"][0]
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GENERATE_IMAGE,
+        render_image,
+        schema=vol.Schema(
+            {
+                vol.Required("config_entry"): selector.ConfigEntrySelector(
+                    {
+                        "integration": DOMAIN,
+                    }
+                ),
+                vol.Required("prompt"): cv.string,
+                vol.Optional("size", default="512"): vol.In(("256", "512", "1024")),
+            }
+        ),
+        supports_response=SupportsResponse.ONLY,
+    )
+    return True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
@@ -93,25 +131,19 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         self, user_input: conversation.ConversationInput
     ) -> conversation.ConversationResult:
         """Process a sentence."""
-        system_prompt = self.entry.options.get(CONF_PROMPT, DEFAULT_PROMPT)
-        model = self.entry.options.get(CONF_MODEL, DEFAULT_MODEL)
+        raw_prompt = self.entry.options.get(CONF_PROMPT, DEFAULT_PROMPT)
+        model = self.entry.options.get(CONF_CHAT_MODEL, DEFAULT_CHAT_MODEL)
         max_tokens = self.entry.options.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS)
         top_p = self.entry.options.get(CONF_TOP_P, DEFAULT_TOP_P)
         temperature = self.entry.options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
-        new_message = {
-            "role": "user",
-            "content": user_input.text
-            + " Answer in syntactially perfect json and only json,",
-        }
-
-        conversation_id = None
 
         if user_input.conversation_id in self.history:
             conversation_id = user_input.conversation_id
-            messages = self.history[conversation_id] + [new_message]
+            messages = self.history[conversation_id]
         else:
+            conversation_id = ulid.ulid()
             try:
-                home_info_prompt = self._async_generate_prompt(HOME_INFO_TEMPLATE)
+                prompt = self._async_generate_prompt(raw_prompt)
             except TemplateError as err:
                 _LOGGER.error("Error rendering prompt: %s", err)
                 intent_response = intent.IntentResponse(language=user_input.language)
@@ -122,34 +154,15 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
                 return conversation.ConversationResult(
                     response=intent_response, conversation_id=conversation_id
                 )
+            messages = [{"role": "system", "content": prompt}]
 
-            conversation_id = ulid.ulid()
-            _LOGGER.info("System Prompt: {system_prompt}")
-            _LOGGER.info("Home Info: {home_info_prompt}")
-            messages = [
-                {"role": "user", "content": system_prompt},
-                {"role": "assistant", "content": '{"comment":"Ok!"}'},
-                {"role": "user", "content": home_info_prompt},
-                {"role": "assistant", "content": '{"comment":"Got it!"}'},
-                new_message,
-            ]
+        messages.append({"role": "user", "content": user_input.text})
 
-        user_name = "User"
-        if (
-            user_input.context.user_id
-            and (
-                user := await self.hass.auth.async_get_user(user_input.context.user_id)
-            )
-            and user.name
-        ):
-            user_name = user.name
-
-        # prompt += f"\n{user_name}: {user_input.text}\nSmart home: "
-
-        # _LOGGER.info("Prompt for %s: %s", model, prompt)
+        _LOGGER.debug("Prompt for %s: %s", model, messages)
 
         try:
             result = await openai.ChatCompletion.acreate(
+                api_key=self.entry.data[CONF_API_KEY],
                 model=model,
                 messages=messages,
                 max_tokens=max_tokens,
@@ -167,51 +180,13 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
                 response=intent_response, conversation_id=conversation_id
             )
 
-        _LOGGER.info("Response %s", result)
-        response = result["choices"][0]["message"]["content"]
-        self.history[conversation_id] = messages + [
-            {"role": "assistant", "content": response}
-        ]
-
-        try:
-            if response[-2:] == ",}":
-                response = response[-2:] + "}"
-
-            response_json = json.loads(response)
-            comment = response_json["comment"]
-        except Exception as err:
-            comment = f"Unable to parse: {response} \n Error: {err}"
-            intent_response = intent.IntentResponse(language=user_input.language)
-            intent_response.async_set_speech(comment)
-
-            return conversation.ConversationResult(
-                response=intent_response, conversation_id=conversation_id
-            )
-
-        try:
-            if (
-                "command" in response_json.keys()
-                and type(response_json["command"]) == dict
-            ):
-                await self.hass.services.async_call(
-                    response_json["command"]["domain"],
-                    response_json["command"]["service"],
-                    response_json["command"]["data"],
-                )
-        except Exception as err:
-            comment = f"""Unable to execute: {response_json["command"]['domain'], 
-                    response_json["command"]['service'],  
-                   response_json["command"]['data']} \n Error: {err}"""
-            intent_response = intent.IntentResponse(language=user_input.language)
-            intent_response.async_set_speech(comment)
-
-            return conversation.ConversationResult(
-                response=intent_response, conversation_id=conversation_id
-            )
+        _LOGGER.debug("Response %s", result)
+        response = result["choices"][0]["message"]
+        messages.append(response)
+        self.history[conversation_id] = messages
 
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(comment)
-
+        intent_response.async_set_speech(response["content"])
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
         )

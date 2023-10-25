@@ -8,5 +8,5 @@
   "documentation": "",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "requirements": ["openai==0.27.2"]
+  "requirements": ["openai==0.28.1"]
 }
