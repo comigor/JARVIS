@@ -202,6 +202,8 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
 
             response_json = json.loads(response)
             comment = response_json["comment"]
+            del response_json['comment']
+
         except Exception as err:
             comment = f"Unable to parse: {response} \n Error: {err}"
             intent_response = intent.IntentResponse(language=user_input.language)
