@@ -3,17 +3,28 @@ from __future__ import annotations
 
 from functools import partial
 import logging
-import json
+from typing import Literal
 
 import openai
 from openai import error
+import voluptuous as vol
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady, TemplateError
-from homeassistant.helpers import area_registry as ar, intent, service, template
+from homeassistant.const import CONF_API_KEY, MATCH_ALL
+from homeassistant.core import (
+    HomeAssistant,
+    ServiceCall,
+    ServiceResponse,
+    SupportsResponse,
+)
+from homeassistant.exceptions import (
+    ConfigEntryNotReady,
+    HomeAssistantError,
+    TemplateError,
+)
+from homeassistant.helpers import config_validation as cv, intent, selector, template
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import ulid
 
 from .const import (
@@ -28,18 +39,22 @@ from .const import (
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_P,
     HOME_INFO_TEMPLATE,
+    DOMAIN,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
-    openai.api_key = entry.data[CONF_API_KEY]
-
     try:
         await hass.async_add_executor_job(
-            partial(openai.Engine.list, request_timeout=10)
+            partial(
+                openai.Engine.list,
+                api_key=entry.data[CONF_API_KEY],
+                request_timeout=10,
+            )
         )
     except error.AuthenticationError as err:
         _LOGGER.error("Invalid API key: %s", err)
@@ -47,13 +62,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except error.OpenAIError as err:
         raise ConfigEntryNotReady(err) from err
 
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_API_KEY]
+
     conversation.async_set_agent(hass, entry, OpenAIAgent(hass, entry))
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload OpenAI."""
-    openai.api_key = None
+    hass.data[DOMAIN].pop(entry.entry_id)
     conversation.async_unset_agent(hass, entry)
     return True
 
@@ -65,12 +82,12 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         """Initialize the agent."""
         self.hass = hass
         self.entry = entry
-        self.history: dict[str, str] = {}
+        self.history: dict[str, list[dict]] = {}
 
     @property
-    def attribution(self):
-        """Return the attribution."""
-        return {"name": "Powered by OpenAI", "url": "https://www.openai.com"}
+    def supported_languages(self) -> list[str] | Literal["*"]:
+        """Return a list of supported languages."""
+        return MATCH_ALL
 
     async def async_process(
         self, user_input: conversation.ConversationInput
@@ -202,7 +219,6 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         return template.Template(raw_prompt, self.hass).async_render(
             {
                 "ha_name": self.hass.config.location_name,
-                "areas": list(ar.async_get(self.hass).areas.values()),
             },
             parse_result=False,
         )
