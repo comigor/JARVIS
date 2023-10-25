@@ -104,6 +104,8 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             + " Answer in syntactially perfect json and only json,",
         }
 
+        conversation_id = None
+
         if user_input.conversation_id in self.history:
             conversation_id = user_input.conversation_id
             messages = self.history[conversation_id] + [new_message]
