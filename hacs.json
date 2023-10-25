@@ -2,7 +2,7 @@
   "name": "OpenAIEnhancedConversation",
   "render_readme": true,
   "iot_class": "cloud_push",
-  "content_in_root": false,
+  "content_in_root": true,
   "domains": ["conversation"],
   "zip_release": false,
 }
