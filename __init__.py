@@ -26,6 +26,7 @@ from homeassistant.exceptions import (
 from homeassistant.helpers import config_validation as cv, intent, selector, template
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import ulid
+import json
 
 from .const import (
     CONF_CHAT_MODEL,
@@ -136,10 +137,15 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         max_tokens = self.entry.options.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS)
         top_p = self.entry.options.get(CONF_TOP_P, DEFAULT_TOP_P)
         temperature = self.entry.options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
+        new_message = {
+            "role": "user",
+            "content": user_input.text
+            + " Answer in syntactially perfect json and only json,",
+        }
 
         if user_input.conversation_id in self.history:
             conversation_id = user_input.conversation_id
-            messages = self.history[conversation_id]
+            messages = self.history[conversation_id] + [new_message]
         else:
             conversation_id = ulid.ulid()
             try:
@@ -154,9 +160,13 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
                 return conversation.ConversationResult(
                     response=intent_response, conversation_id=conversation_id
                 )
-            messages = [{"role": "system", "content": prompt}]
+            messages = [
+                {"role": "user", "content": prompt},
+                {"role": "assistant", "content": '{"comment":"Got it!"}'},
+                new_message,
+            ]
 
-        messages.append({"role": "user", "content": user_input.text})
+            # TODO: use function calls!
 
         _LOGGER.debug("Prompt for %s: %s", model, messages)
 
@@ -180,13 +190,51 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
                 response=intent_response, conversation_id=conversation_id
             )
 
-        _LOGGER.debug("Response %s", result)
-        response = result["choices"][0]["message"]
-        messages.append(response)
-        self.history[conversation_id] = messages
+        _LOGGER.info("Response %s", result)
+        response = result["choices"][0]["message"]["content"]
+        self.history[conversation_id] = messages + [
+            {"role": "assistant", "content": response}
+        ]
+
+        try:
+            if response[-2:] == ",}":
+                response = response[-2:] + "}"
+
+            response_json = json.loads(response)
+            comment = response_json["comment"]
+        except Exception as err:
+            comment = f"Unable to parse: {response} \n Error: {err}"
+            intent_response = intent.IntentResponse(language=user_input.language)
+            intent_response.async_set_speech(comment)
+
+            return conversation.ConversationResult(
+                response=intent_response, conversation_id=conversation_id
+            )
+
+        try:
+            if (
+                "command" in response_json.keys()
+                and type(response_json["command"]) == dict
+            ):
+                await self.hass.services.async_call(
+                    response_json["command"]["domain"],
+                    response_json["command"]["service"],
+                    response_json["command"]["data"],
+                )
+        except Exception as err:
+            comment = f"""Unable to execute: {response_json["command"]['domain'], 
+                    response_json["command"]['service'],  
+                   response_json["command"]['data']} \n Error: {err}"""
+            intent_response = intent.IntentResponse(language=user_input.language)
+            intent_response.async_set_speech(comment)
+
+            return conversation.ConversationResult(
+                response=intent_response, conversation_id=conversation_id
+            )
 
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(response["content"])
+        intent_response.async_set_speech(comment)
+
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
         )
