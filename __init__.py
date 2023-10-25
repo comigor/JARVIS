@@ -200,8 +200,8 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         try:
             response = response.replace(",}", "}")
             response_json = json.loads(response)
-            comment = response_json["comment"]
-            del response_json['comment']
+            comment = response_json.get("comment")
+            response_json.pop('comment', None)
         except Exception as err:
             comment = f"Unable to parse: {response}\nError: {err}\n{traceback.format_exc()}"
             intent_response = intent.IntentResponse(language=user_input.language)
