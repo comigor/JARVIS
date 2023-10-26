@@ -140,7 +140,7 @@ class MyKani(Kani):
         return f"Weather in {location}: Sunny, 27 degrees celsius."
 
     @ai_function(json_schema={
-        'properties': {'location': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
+        'properties': {'area': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
         'required': ['area'],
         'type': 'object'
     })
@@ -157,7 +157,7 @@ class MyKani(Kani):
         return f"Ok."
 
     @ai_function(json_schema={
-        'properties': {'location': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
+        'properties': {'area': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
         'required': ['area'],
         'type': 'object'
     })
@@ -244,14 +244,15 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
                     chat_history=chat_history,
                 )
 
+        last_msg = None
         try:
             _LOGGER.info('FULL ROUND:')
-            # last_msg = None
             async for msg in self.ai.full_round(user_input.text + ". Answer in syntactically perfect json and only json."):
                 # last_msg = msg
                 _LOGGER.info(msg)
                 _LOGGER.info(msg.function_call)
                 _LOGGER.info(msg.text)
+                last_msg = msg.text
         except error.OpenAIError as err:
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(
@@ -263,7 +264,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             )
 
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech('ok')
+        intent_response.async_set_speech(last_msg)
 
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
