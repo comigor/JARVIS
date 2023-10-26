@@ -151,7 +151,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         self.entry = entry
         self.history: dict[str, list[dict]] = {}
 
-        self.engine = OpenAIEngine(entry.data[CONF_API_KEY], model="gpt-3.5-turbo-0613", max_context_size=4096)
+        self.engine = None
         self.ai = None
 
     @property
@@ -168,6 +168,13 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         max_tokens = self.entry.options.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS)
         top_p = self.entry.options.get(CONF_TOP_P, DEFAULT_TOP_P)
         temperature = self.entry.options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
+
+        intent_response = intent.IntentResponse(language=user_input.language)
+        intent_response.async_set_speech('ok')
+
+        return conversation.ConversationResult(
+            response=intent_response, conversation_id=user_input.conversation_id
+        )
 
         new_message = ChatMessage.user(user_input.text + ". Answer in syntactically perfect json and only json.")
 
@@ -199,6 +206,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             ]
 
             if self.ai == None:
+                self.engine = OpenAIEngine(self.entry.data[CONF_API_KEY], model="gpt-3.5-turbo-0613", max_context_size=4096)
                 self.ai = MyKani(
                     self.engine,
                     system_prompt=ChatMessage.system(raw_prompt),

@@ -1,5 +1,5 @@
 {
-  "domain": "mycroft_conversation",
+  "domain": "openaiconversationenhanced",
   "name": "Mycroft Conversation",
   "codeowners": ["@qui3xote"],
   "config_flow": true,

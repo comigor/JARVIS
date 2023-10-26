@@ -1,6 +1,6 @@
 """Constants for the OpenAI Conversation integration."""
 
-DOMAIN = "mycroft_conversation"
+DOMAIN = "openaiconversationenhanced"
 CONF_PROMPT = "prompt"
 DEFAULT_PROMPT = """
 This smart home is controlled by Home Assistant.
