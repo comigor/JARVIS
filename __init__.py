@@ -29,7 +29,7 @@ import json
 import traceback
 
 from typing import Literal, Annotated
-from kani import AIFunction, AIParam, Kani, ChatMessage
+from kani import AIFunction, AIParam, Kani, ChatMessage, ai_function
 from kani.engines.openai import OpenAIEngine
 
 from .const import (
@@ -119,22 +119,25 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-def get_weather(
-    location: Annotated[str, AIParam(desc="The city and state, e.g. San Francisco, CA")],
-):
-    """Get the current weather in a given location."""
-    return f"Weather in {location}: Sunny, 27 degrees celsius."
+# def get_weather(
+#     location: Annotated[str, AIParam(desc="The city and state, e.g. San Francisco, CA")],
+# ):
+#     """Get the current weather in a given location."""
+#     return f"Weather in {location}: Sunny, 27 degrees celsius."
 
 
-# {'properties': {'location': {'description': 'The city and state, e.g. San Francisco, CA', 'type': 'string'}}, 'required': ['location'], 'type': 'object'}
-# class MyKani(Kani):
-    # @ai_function()
-    # def get_weather(
-    #     self,
-    #     location: Annotated[str, AIParam(desc="The city and state, e.g. San Francisco, CA")],
-    # ):
-    #     """Get the current weather in a given location."""
-    #     return f"Weather in {location}: Sunny, 27 degrees celsius."
+class MyKani(Kani):
+    @ai_function(json_schema={
+        'properties': {'location': {'description': 'The city and state, e.g. San Francisco, CA', 'type': 'string'}},
+        'required': ['location'],
+        'type': 'object'
+    })
+    def get_weather(
+        self,
+        location: Annotated[str, AIParam(desc="The city and state, e.g. San Francisco, CA")],
+    ):
+        """Get the current weather in a given location."""
+        return f"Weather in {location}: Sunny, 27 degrees celsius."
 
     # @ai_function()
     # def call_hass(
@@ -211,9 +214,9 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
 
             if self.ai == None:
                 await self.hass.async_add_executor_job(self.setup_ai)
-                self.ai = Kani(
+                self.ai = MyKani(
                     self.engine,
-                    functions=[AIFunction(get_weather)],
+                    # functions=[AIFunction(get_weather)],
                     system_prompt=raw_prompt,
                     chat_history=chat_history,
                 )
