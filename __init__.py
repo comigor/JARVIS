@@ -186,7 +186,7 @@ class MyKani(Kani):
         'type': 'object'
     })
     async def turn_on(self, entity=None, area=None):
-        """Turn on a specific entity or all entities of an area."""
+        """Turn on a specific entity or all entities of an area. Specify either an entity or an area, but never none."""
         await self.hass.services.async_call(
             'homeassistant',
             'turn_on',
@@ -206,7 +206,7 @@ class MyKani(Kani):
         'type': 'object'
     })
     async def turn_off(self, entity=None, area=None):
-        """Turn off a specific entity or all entities of an area."""
+        """Turn off a specific entity or all entities of an area. Specify either an entity or an area, but never none."""
         await self.hass.services.async_call(
             'homeassistant',
             'turn_off',
