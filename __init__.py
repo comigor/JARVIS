@@ -206,13 +206,13 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
 
         new_message = ChatMessage.user(user_input.text + ". Answer in syntactically perfect json and only json.")
 
-        conversaton_id = ulid.ulid()
+        conversation_id = ulid.ulid()
 
         if user_input.conversation_id in self.history:
             conversation_id = user_input.conversation_id
             messages = self.history[conversation_id] + [new_message]
         else:
-            conversaton_id = ulid.ulid()
+            conversation_id = ulid.ulid()
 
             try:
                 home_info_prompt = self._async_generate_prompt(HOME_INFO_TEMPLATE)
@@ -224,7 +224,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
                     f"Sorry, I had a problem with my template: {err}\n{traceback.format_exc()}",
                 )
                 return conversation.ConversationResult(
-                    response=intent_response, conversation_id=conversaton_id
+                    response=intent_response, conversation_id=conversation_id
                 )
 
             _LOGGER.info('PROMPTERS:')
