@@ -246,9 +246,9 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
 
         try:
             _LOGGER.info('FULL ROUND:')
-            last_msg = None
+            # last_msg = None
             async for msg in self.ai.full_round(user_input.text + ". Answer in syntactically perfect json and only json."):
-                last_msg = msg
+                # last_msg = msg
                 _LOGGER.info(msg)
                 _LOGGER.info(msg.function_call)
                 _LOGGER.info(msg.text)
@@ -263,7 +263,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             )
 
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(last_msg.text)
+        intent_response.async_set_speech('ok')
 
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
