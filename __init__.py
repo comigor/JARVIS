@@ -14,7 +14,7 @@ import traceback
 from typing import Literal
 from kani import Kani
 
-import brains
+from . import brains
 from abilities.homeassistant import HomeAssistantAbility
 
 from .const import (
