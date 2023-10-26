@@ -143,37 +143,85 @@ class MyKani(Kani):
         """Get the current weather in a given location."""
         return f"Weather in {location}: Sunny, 27 degrees celsius."
 
+    # @ai_function(json_schema={
+    #     'properties': {'area': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
+    #     'required': ['area'],
+    #     'type': 'object'
+    # })
+    # async def turn_on_lights(
+    #     self,
+    #     area: Annotated[str, AIParam(desc="The area in which the lights are, e.g. office, kitchen")],
+    # ):
+    #     """Turn on all lights of an area."""
+    #     await self.hass.services.async_call(
+    #         'light',
+    #         'turn_on',
+    #         { 'area_id': area },
+    #     )
+    #     return f"Ok."
+
+    # @ai_function(json_schema={
+    #     'properties': {'area': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
+    #     'required': ['area'],
+    #     'type': 'object'
+    # })
+    # async def turn_off_lights(
+    #     self,
+    #     area: Annotated[str, AIParam(desc="The area in which the lights are, e.g. office, kitchen")],
+    # ):
+    #     """Turn off all lights of an area."""
+    #     await self.hass.services.async_call(
+    #         'light',
+    #         'turn_off',
+    #         { 'area_id': area },
+    #     )
+    #     return f"Ok."
+
     @ai_function(json_schema={
-        'properties': {'area': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
-        'required': ['area'],
+        'properties': {
+            'entity': {'description': 'The entity to turn on, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
+            'area': {'description': 'The area to turn on all devices within, e.g. office, kitchen', 'type': 'string'}
+        },
+        'required': [],
         'type': 'object'
     })
-    async def turn_on_lights(
+    async def turn_on_entity(
         self,
-        area: Annotated[str, AIParam(desc="The area in which the lights are, e.g. office, kitchen")],
+        entity,
+        area,
     ):
-        """Turn on all lights of an area."""
+        """Turn on an especific entity or all entities of an area."""
         await self.hass.services.async_call(
-            'light',
+            'homeassistant',
             'turn_on',
-            { 'area_id': area },
+            {
+                **({'area_id': area} if area is not None else {}),
+                **({'entity_id': entity} if entity is not None else {}),
+            },
         )
         return f"Ok."
 
     @ai_function(json_schema={
-        'properties': {'area': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
-        'required': ['area'],
+        'properties': {
+            'entity': {'description': 'The entity to turn off, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
+            'area': {'description': 'The area to turn off all devices within, e.g. office, kitchen', 'type': 'string'}
+        },
+        'required': [],
         'type': 'object'
     })
-    async def turn_off_lights(
+    async def turn_off_entity(
         self,
-        area: Annotated[str, AIParam(desc="The area in which the lights are, e.g. office, kitchen")],
+        entity,
+        area,
     ):
-        """Turn off all lights of an area."""
+        """Turn off an especific entity or all entities of an area."""
         await self.hass.services.async_call(
-            'light',
+            'homeassistant',
             'turn_off',
-            { 'area_id': area },
+            {
+                **({'area_id': area} if area is not None else {}),
+                **({'entity_id': entity} if entity is not None else {}),
+            },
         )
         return f"Ok."
 
