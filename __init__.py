@@ -128,6 +128,19 @@ class MyKani(Kani):
         """Get the current weather in a given location."""
         return f"Weather in {location}: Sunny, 27 degrees celsius."
 
+    # @ai_function()
+    # def call_hass(
+    #     self,
+    #     location: Annotated[str, AIParam(desc="The city and state, e.g. San Francisco, CA")],
+    # ):
+    #     """Get the current weather in a given location."""
+    #     await self.hass.services.async_call(
+    #         response_json["command"]["domain"],
+    #         response_json["command"]["service"],
+    #         response_json["command"]["data"],
+    #     )
+    #     return f"Weather in {location}: Sunny, 27 degrees celsius."
+
 
 class OpenAIAgent(conversation.AbstractConversationAgent):
     """OpenAI conversation agent."""

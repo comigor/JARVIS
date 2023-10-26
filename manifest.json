@@ -8,5 +8,5 @@
   "documentation": "",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "requirements": ["openai==0.28.1"]
+  "requirements": ["openai>=0.28.1", "kani[openai]>=0.5.1"]
 }
