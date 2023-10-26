@@ -31,18 +31,6 @@ _LOGGER = logging.getLogger(__name__)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
-def wrap_into_ha(hass: HomeAssistant):
-    async def wrapper(fun: Callable, *args, **kwargs):
-        compacted = partial(fun, *args, **kwargs)
-        _LOGGER.error('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-        _LOGGER.error(fun)
-        _LOGGER.error(args)
-        _LOGGER.error(kwargs)
-        await compacted()
-        # await hass.async_add_executor_job(compacted)
-    return wrapper
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
     openai_key = entry.data[CONF_OPENAI_KEY_KEY]
@@ -60,7 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         abilities = [
             HomeAssistantAbility(api_key=homeassistant_key, base_url=homeassistant_url),
         ]
-        ai = await brains.get_ai(openai_key=openai_key, abilities=abilities, wrapper=wrap_into_ha(hass))
+        ai = await brains.get_ai(openai_key=openai_key, abilities=abilities)
 
     except Exception as err:
         _LOGGER.error(f"Sorry, I had a problem: {err}\n{traceback.format_exc()}")

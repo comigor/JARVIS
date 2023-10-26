@@ -89,7 +89,7 @@ Office:
                 }
             ) as response:
                 response.raise_for_status()
-                _LOGGER.debug(response.json())
+                _LOGGER.debug(await response.json())
                 return "Ok" if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
 
 
@@ -105,5 +105,5 @@ Office:
                 }
             ) as response:
                 response.raise_for_status()
-                _LOGGER.debug(response.json())
+                _LOGGER.debug(await response.json())
                 return "Ok" if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
