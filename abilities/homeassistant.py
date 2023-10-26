@@ -91,8 +91,6 @@ Office:
         return "Ok" if response.status_code == 200 else f"Sorry, I can't do that (got error {response.status_code})"
 
     async def turn_off(self, entity: str = None, area: str = None):
-        _LOGGER.error(self.headers)
-        _LOGGER.error(self.base_url)
         response = requests.post(
             f'{self.base_url}/api/services/homeassistant/turn_off',
             headers=self.headers,

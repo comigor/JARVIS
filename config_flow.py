@@ -1,7 +1,6 @@
 """Config flow for Jarvis Conversation integration."""
 from __future__ import annotations
 
-from functools import partial
 import logging
 import types
 from types import MappingProxyType
@@ -12,11 +11,6 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers.selector import (
-    NumberSelector,
-    NumberSelectorConfig,
-    TemplateSelector,
-)
 
 from .const import (
     DOMAIN,
@@ -115,11 +109,11 @@ def openai_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
     return {
         vol.Required(
             CONF_OPENAI_KEY_KEY,
-            description={'suggested_value': 'OpenAI key'},
+            description={'suggested_value': options.get(CONF_OPENAI_KEY_KEY, 'OpenAI key')},
         ): str,
         vol.Required(
             CONF_HA_KEY_KEY,
-            description={'suggested_value': 'HomeAssistant long-lived access tokens'},
+            description={'suggested_value': options.get(CONF_HA_KEY_KEY, 'HomeAssistant long-lived access tokens')},
         ): str,
         vol.Optional(
             CONF_HA_URL_KEY,

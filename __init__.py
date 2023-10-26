@@ -10,7 +10,7 @@ from homeassistant.const import MATCH_ALL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, intent
 from homeassistant.util import ulid
-from typing import Literal
+from typing import Literal, Callable
 from kani import Kani
 
 from . import brains
@@ -26,6 +26,12 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+def wrap_into_ha(hass: HomeAssistant):
+    def wrapped(fun: Callable, **kwds):
+        hass.async_add_executor_job(fun, **kwds)
+    return wrapped
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -45,10 +51,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         abilities = [
             HomeAssistantAbility(api_key=homeassistant_key, base_url=homeassistant_url),
         ]
-        ai = await brains.get_ai(openai_key=openai_key, abilities=abilities)
+        ai = await brains.get_ai(openai_key=openai_key, abilities=abilities, wrapper=wrap_into_ha(hass))
 
     except Exception as err:
-        _LOGGER.error(f"Sorry, I had a problem with my template: {err}\n{traceback.format_exc()}")
+        _LOGGER.error(f"Sorry, I had a problem: {err}\n{traceback.format_exc()}")
         return False
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_OPENAI_KEY_KEY]

@@ -3,17 +3,18 @@
 import os
 import logging
 import asyncio
+from typing import Callable
 from kani import Kani, chat_in_terminal_async
 from kani.engines.openai import OpenAIEngine
 
-from .abilities.homeassistant import HomeAssistantAbility
-from .abilities.base import BaseAbility
+from abilities.homeassistant import HomeAssistantAbility
+from abilities.base import BaseAbility
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
 
 
-async def get_ai(openai_key: str, abilities: [BaseAbility]):
+async def get_ai(openai_key: str, abilities: [BaseAbility] = [], wrapper: Callable = lambda x: x):
     _LOGGER.debug('Starting up OpenAIEngine')
     engine = OpenAIEngine(openai_key, model="gpt-3.5-turbo-0613", max_context_size=4096)
 
@@ -36,6 +37,9 @@ async def get_ai(openai_key: str, abilities: [BaseAbility]):
         chat_history += history
         all_functions += functions
 
+    for fun in all_functions:
+        fun.inner = wrapper(fun.inner)
+
     return Kani(
         engine=engine,
         system_prompt=system_prompt,
@@ -49,7 +53,7 @@ async def main():
         HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443'),
     ]
     openai_key = os.getenv('OPENAI_KEY')
-    ai = await get_ai(openai_key=openai_key, abilities=abilities)
+    ai = await get_ai(openai_key=openai_key, abilities=abilities, wrapper=lambda x: x)
 
     await chat_in_terminal_async(ai)
 
