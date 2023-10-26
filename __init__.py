@@ -6,7 +6,7 @@ import traceback
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY, MATCH_ALL
+from homeassistant.const import MATCH_ALL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, intent
 from homeassistant.util import ulid
@@ -51,7 +51,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error(f"Sorry, I had a problem with my template: {err}\n{traceback.format_exc()}")
         return False
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_API_KEY]
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_OPENAI_KEY_KEY]
 
     conversation.async_set_agent(hass, entry, OpenAIAgent(hass, ai, entry))
     return True
