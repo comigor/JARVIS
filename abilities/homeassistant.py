@@ -1,9 +1,10 @@
 """The OpenAI Conversation integration."""
 
-import logging
-from .base import BaseAbility
-from kani import AIFunction, ChatMessage
 import requests
+import logging
+from kani import AIFunction, ChatMessage
+
+from .base import BaseAbility
 
 _LOGGER = logging.getLogger(__name__)
 

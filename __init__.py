@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import traceback
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
@@ -9,13 +10,11 @@ from homeassistant.const import CONF_API_KEY, MATCH_ALL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, intent
 from homeassistant.util import ulid
-import traceback
-
 from typing import Literal
 from kani import Kani
 
 from . import brains
-from abilities.homeassistant import HomeAssistantAbility
+from .abilities.homeassistant import HomeAssistantAbility
 
 from .const import (
     CONF_OPENAI_KEY,

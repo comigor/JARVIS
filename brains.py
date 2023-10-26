@@ -1,13 +1,13 @@
 """The OpenAI Conversation integration."""
 
-import logging
 import os
+import logging
 import asyncio
 from kani import Kani, chat_in_terminal_async
 from kani.engines.openai import OpenAIEngine
 
-from abilities.homeassistant import HomeAssistantAbility
-from abilities.base import BaseAbility
+from .abilities.homeassistant import HomeAssistantAbility
+from .abilities.base import BaseAbility
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
@@ -44,18 +44,18 @@ async def get_ai(openai_key: str, abilities: [BaseAbility]):
     )
 
 
-# async def main():
-#     abilities = [
-#         HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443'),
-#     ]
-#     openai_key = os.getenv('OPENAI_KEY')
-#     ai = await get_ai(openai_key=openai_key, abilities=abilities)
+async def main():
+    abilities = [
+        HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443'),
+    ]
+    openai_key = os.getenv('OPENAI_KEY')
+    ai = await get_ai(openai_key=openai_key, abilities=abilities)
 
-#     await chat_in_terminal_async(ai)
+    await chat_in_terminal_async(ai)
 
 
-# if __name__ == '__main__':
-#     loop = asyncio.get_event_loop()
-#     asyncio.ensure_future(main())
-#     loop.run_forever()
-#     loop.close()
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    asyncio.ensure_future(main())
+    loop.run_forever()
+    loop.close()
