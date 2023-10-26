@@ -1,4 +1,4 @@
-"""Config flow for OpenAI Conversation integration."""
+"""Config flow for Jarvis Conversation integration."""
 from __future__ import annotations
 
 from functools import partial
@@ -20,28 +20,27 @@ from homeassistant.helpers.selector import (
 
 from .const import (
     DOMAIN,
-    CONF_OPENAI_KEY,
-    CONF_HA_KEY,
-    CONF_HA_URL,
+    CONF_OPENAI_KEY_KEY,
+    CONF_HA_KEY_KEY,
+    CONF_HA_URL_KEY,
+    DEFAULT_HA_URL,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_OPENAI_KEY): str,
-        vol.Required(CONF_HA_KEY): str,
-        vol.Required(CONF_HA_URL): str,
+        vol.Required(CONF_OPENAI_KEY_KEY): str,
+        vol.Required(CONF_HA_KEY_KEY): str,
+        vol.Required(CONF_HA_URL_KEY): str,
     }
 )
 
 DEFAULT_OPTIONS = types.MappingProxyType(
     {
-        # CONF_PROMPT: DEFAULT_PROMPT,
-        # CONF_CHAT_MODEL: DEFAULT_CHAT_MODEL,
-        # CONF_MAX_TOKENS: DEFAULT_MAX_TOKENS,
-        # CONF_TOP_P: DEFAULT_TOP_P,
-        # CONF_TEMPERATURE: DEFAULT_TEMPERATURE,
+        CONF_OPENAI_KEY_KEY: '',
+        CONF_HA_KEY_KEY: '',
+        CONF_HA_URL_KEY: DEFAULT_HA_URL,
     }
 )
 
@@ -54,7 +53,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
     pass
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for OpenAI Conversation."""
+    """Handle a config flow for Jarvis Conversation."""
 
     VERSION = 2
 
@@ -75,7 +74,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
-            return self.async_create_entry(title="OpenAI Conversation", data=user_input)
+            return self.async_create_entry(title="Jarvis Conversation", data=user_input)
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
@@ -101,7 +100,7 @@ class OptionsFlow(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(title="OpenAI Conversation", data=user_input)
+            return self.async_create_entry(title="Jarvis Conversation", data=user_input)
         schema = openai_config_option_schema(self.config_entry.options)
         return self.async_show_form(
             step_id="init",
@@ -114,32 +113,17 @@ def openai_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
     if not options:
         options = DEFAULT_OPTIONS
     return {
-        # vol.Optional(
-        #     CONF_PROMPT,
-        #     description={"suggested_value": options[CONF_PROMPT]},
-        #     default=DEFAULT_PROMPT,
-        # ): TemplateSelector(),
-        # vol.Optional(
-        #     CONF_CHAT_MODEL,
-        #     description={
-        #         # New key in HA 2023.4
-        #         "suggested_value": options.get(CONF_CHAT_MODEL, DEFAULT_CHAT_MODEL)
-        #     },
-        #     default=DEFAULT_CHAT_MODEL,
-        # ): str,
-        # vol.Optional(
-        #     CONF_MAX_TOKENS,
-        #     description={"suggested_value": options[CONF_MAX_TOKENS]},
-        #     default=DEFAULT_MAX_TOKENS,
-        # ): int,
-        # vol.Optional(
-        #     CONF_TOP_P,
-        #     description={"suggested_value": options[CONF_TOP_P]},
-        #     default=DEFAULT_TOP_P,
-        # ): NumberSelector(NumberSelectorConfig(min=0, max=1, step=0.05)),
-        # vol.Optional(
-        #     CONF_TEMPERATURE,
-        #     description={"suggested_value": options[CONF_TEMPERATURE]},
-        #     default=DEFAULT_TEMPERATURE,
-        # ): NumberSelector(NumberSelectorConfig(min=0, max=1, step=0.05)),
+        vol.Required(
+            CONF_OPENAI_KEY_KEY,
+            description={'suggested_value': 'OpenAI key'},
+        ): str,
+        vol.Required(
+            CONF_HA_KEY_KEY,
+            description={'suggested_value': 'HomeAssistant long-lived access tokens'},
+        ): str,
+        vol.Optional(
+            CONF_HA_URL_KEY,
+            description={'suggested_value': options.get(CONF_HA_URL_KEY, DEFAULT_HA_URL)},
+            default=DEFAULT_HA_URL,
+        ): str,
     }
