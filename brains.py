@@ -8,13 +8,13 @@ from kani import Kani, chat_in_terminal_async
 from kani.engines.openai import OpenAIEngine
 from functools import partial
 
-import abilities.homeassistant as ab_ha
-import abilities.base as ab_ba
+from abilities.homeassistant import HomeAssistantAbility
+from abilities.base import BaseAbility
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
 
-async def get_ai(openai_key: str, abilities: [ab_ba.BaseAbility] = [], wrapper: Callable = lambda x: x):
+async def get_ai(openai_key: str, abilities: [BaseAbility] = [], wrapper: Callable = lambda x: x):
     _LOGGER.debug('Starting up OpenAIEngine')
     engine = OpenAIEngine(openai_key, model="gpt-3.5-turbo-0613", max_context_size=4096)
 
@@ -75,13 +75,13 @@ def wrap_into_ha(hass):
 # ------------------------------------------
 
 async def main():
-    # ability = ab_ha.HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443')
+    # ability = HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443')
     # await ability.turn_off('light.office_light')
     # wrapped = wrap_into_ha(MyHass())
     # await wrapped(ability.turn_on, entity='light.office_light')
 
     abilities = [
-        ab_ha.HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443'),
+        HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443'),
     ]
     openai_key = os.getenv('OPENAI_KEY')
     ai = await get_ai(openai_key=openai_key, abilities=abilities, wrapper=wrap_into_ha(MyHass()))
