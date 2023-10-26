@@ -171,6 +171,15 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
 
         _LOGGER.debug("Prompt for %s: %s", model, messages)
 
+        intent_response = intent.IntentResponse(language=user_input.language)
+        intent_response.async_set_error(
+            intent.IntentResponseErrorCode.UNKNOWN,
+            f"{prompt}",
+        )
+        return conversation.ConversationResult(
+            response=intent_response, conversation_id=conversation_id
+        )
+
         try:
             result = await openai.ChatCompletion.acreate(
                 api_key=self.entry.data[CONF_API_KEY],
