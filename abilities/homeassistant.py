@@ -78,6 +78,7 @@ Office:
         ]
 
     async def turn_on(self, entity: str = None, area: str = None):
+        _LOGGER.debug(f'Calling turn_on, {locals()}')
         response = requests.post(
             f'{self.base_url}/api/services/homeassistant/turn_on',
             headers=self.headers,
@@ -91,6 +92,7 @@ Office:
         return "Ok" if response.status_code == 200 else f"Sorry, I can't do that (got error {response.status_code})"
 
     async def turn_off(self, entity: str = None, area: str = None):
+        _LOGGER.debug(f'Calling turn_off, {locals()}')
         response = requests.post(
             f'{self.base_url}/api/services/homeassistant/turn_off',
             headers=self.headers,

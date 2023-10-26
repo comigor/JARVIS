@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import traceback
+from functools import partial
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
@@ -29,9 +30,15 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 def wrap_into_ha(hass: HomeAssistant):
-    def wrapped(fun: Callable, **kwds):
-        hass.async_add_executor_job(fun, **kwds)
-    return wrapped
+    async def wrapper(fun: Callable, *args, **kwargs):
+        compacted = partial(fun, *args, **kwargs)
+        _LOGGER.error('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+        _LOGGER.error(fun)
+        _LOGGER.error(args)
+        _LOGGER.error(kwargs)
+        await compacted()
+        # await hass.async_add_executor_job(compacted)
+    return wrapper
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
