@@ -127,6 +127,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 class MyKani(Kani):
+    def __init__(self, hass: HomeAssistant, **kwds):
+       super(MyKani, self).__init__(**kwds)
+       self.hass = hass
+
     @ai_function(json_schema={
         'properties': {'location': {'description': 'The city and state, e.g. San Francisco, CA', 'type': 'string'}},
         'required': ['location'],
@@ -238,7 +242,8 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             if self.ai == None:
                 await self.hass.async_add_executor_job(self.setup_ai)
                 self.ai = MyKani(
-                    self.engine,
+                    hass=self.hass,
+                    engine=self.engine,
                     # functions=[AIFunction(get_weather)],
                     system_prompt=raw_prompt,
                     chat_history=chat_history,
