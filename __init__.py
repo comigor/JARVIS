@@ -23,7 +23,7 @@ from homeassistant.exceptions import (
     HomeAssistantError,
     TemplateError,
 )
-from homeassistant.helpers import config_validation as cv, intent, selector, template
+from homeassistant.helpers import config_validation as cv, intent, selector, template, area_registry as ar
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import ulid
 import json
@@ -253,6 +253,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         return template.Template(raw_prompt, self.hass).async_render(
             {
                 "ha_name": self.hass.config.location_name,
+                "areas": list(ar.async_get(self.hass).areas.values()),
             },
             parse_result=False,
         )
