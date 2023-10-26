@@ -29,7 +29,7 @@ import json
 import traceback
 
 from typing import Literal, Annotated
-from kani import AIFunction, AIParam, Kani, ChatMessage, ai_function
+from kani import AIFunction, AIParam, Kani, ChatMessage, ChatRole, ai_function
 from kani.engines.openai import OpenAIEngine
 
 from .const import (
@@ -139,18 +139,31 @@ class MyKani(Kani):
         """Get the current weather in a given location."""
         return f"Weather in {location}: Sunny, 27 degrees celsius."
 
-    # @ai_function()
-    # def call_hass(
-    #     self,
-    #     location: Annotated[str, AIParam(desc="The city and state, e.g. San Francisco, CA")],
-    # ):
-    #     """Get the current weather in a given location."""
-    #     await self.hass.services.async_call(
-    #         response_json["command"]["domain"],
-    #         response_json["command"]["service"],
-    #         response_json["command"]["data"],
-    #     )
-    #     return f"Weather in {location}: Sunny, 27 degrees celsius."
+    @ai_function()
+    def turn_on_lights(
+        self,
+        area: Annotated[str, AIParam(desc="The area in which the lights are, e.g. office, kitchen")],
+    ):
+        """Turn on all lights of an area."""
+        self.hass.services.async_call(
+            'light',
+            'turn_on',
+            { 'area_id': area },
+        )
+        return f"Ok."
+
+    @ai_function()
+    def turn_off_lights(
+        self,
+        area: Annotated[str, AIParam(desc="The area in which the lights are, e.g. office, kitchen")],
+    ):
+        """Turn off all lights of an area."""
+        self.hass.services.async_call(
+            'light',
+            'turn_off',
+            { 'area_id': area },
+        )
+        return f"Ok."
 
 
 class OpenAIAgent(conversation.AbstractConversationAgent):
@@ -184,6 +197,8 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         temperature = self.entry.options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
 
         new_message = ChatMessage.user(user_input.text + ". Answer in syntactically perfect json and only json.")
+
+        conversaton_id = ulid.ulid()
 
         if user_input.conversation_id in self.history:
             conversation_id = user_input.conversation_id
@@ -223,8 +238,11 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
 
         try:
             _LOGGER.info('FULL ROUND:')
+            last_msg = None
             async for msg in self.ai.full_round(user_input.text + ". Answer in syntactically perfect json and only json."):
+                last_msg = msg
                 _LOGGER.info(msg)
+                _LOGGER.info(msg.function_call)
                 _LOGGER.info(msg.text)
         except error.OpenAIError as err:
             intent_response = intent.IntentResponse(language=user_input.language)
@@ -237,7 +255,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             )
 
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech('ok')
+        intent_response.async_set_speech(last_msg.text)
 
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
