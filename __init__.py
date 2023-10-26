@@ -159,6 +159,9 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         """Return a list of supported languages."""
         return MATCH_ALL
 
+    def setup_ai(self):
+        self.engine = OpenAIEngine(self.entry.data[CONF_API_KEY], model="gpt-3.5-turbo-0613", max_context_size=4096)
+
     async def async_process(
         self, user_input: conversation.ConversationInput
     ) -> conversation.ConversationResult:
@@ -199,7 +202,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             ]
 
             if self.ai == None:
-                self.engine = OpenAIEngine(self.entry.data[CONF_API_KEY], model="gpt-3.5-turbo-0613", max_context_size=4096)
+                await self.hass.async_add_executor_job(self.setup_ai)
                 self.ai = MyKani(
                     self.engine,
                     system_prompt=ChatMessage.system(raw_prompt),
