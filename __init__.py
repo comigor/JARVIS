@@ -141,7 +141,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         new_message = {
             "role": "user",
             "content": user_input.text
-            + " Answer in syntactially perfect json and only json,",
+            + " Answer in syntactically perfect json and only json,",
         }
 
         if user_input.conversation_id in self.history:

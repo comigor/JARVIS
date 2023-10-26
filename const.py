@@ -6,17 +6,14 @@ DEFAULT_PROMPT = """
 This smart home is controlled by Home Assistant.
 
 An overview of the areas and the devices in this smart home:
-{%- for area in areas() %}
+{%- for area in areas %}
   {%- set area_info = namespace(printed=false) %}
-  {%- for device in area_devices(area) -%}
-    {%- if not device_attr(device, "disabled_by") and not device_attr(device, "entry_type") and device_attr(device, "name") %}
+  {%- for entity in area_entities(area.name) -%}
       {%- if not area_info.printed %}
-
-{{ area_name(area) }}:
+{{ area.name }}:
         {%- set area_info.printed = true %}
       {%- endif %}
-- {{ device_attr(device, "name") }}{% if device_attr(device, "model") and (device_attr(device, "model") | string) not in (device_attr(device, "name") | string) %} ({{ device_attr(device, "model") }}){% endif %}
-    {%- endif %}
+  - {{entity}} is {{states(entity)}}
   {%- endfor %}
 {%- endfor %}
 
@@ -54,24 +51,11 @@ Answer the user's questions about the world truthfully. Be careful not to issue 
 if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" 
 just provide an answer.
 
-The domain, service and data fields are always required as well as either an area_id, and entity_id, or both. 
+The domain, service and data fields are always required as well as either an area_id, and entity_id, or both. Always return a comment, at least to say you understood the task.
 
 Be careful to always respond with syntactically valid JSON, and ONLY JSON, including braces, brackets for lists, wrapping text in quotation marks and no trailing commas.
 """
 
-HOME_INFO_TEMPLATE = """
-Here is the current state of devices in the house. Use this to answer questions about the state of the smart home.
-{%- for area in areas %}
-  {%- set area_info = namespace(printed=false) %}
-  {%- for entity in area_entities(area.name) -%}
-      {%- if not area_info.printed %}
-{{ area.name }}:
-        {%- set area_info.printed = true %}
-      {%- endif %}
-  - {{entity}} is {{states(entity)}}
-  {%- endfor %}
-{%- endfor %}
-"""
 CONF_CHAT_MODEL = "model"
 DEFAULT_CHAT_MODEL = "gpt-3.5-turbo"
 CONF_MAX_TOKENS = "max_tokens"
