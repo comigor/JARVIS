@@ -169,13 +169,6 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         top_p = self.entry.options.get(CONF_TOP_P, DEFAULT_TOP_P)
         temperature = self.entry.options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
 
-        intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech('ok')
-
-        return conversation.ConversationResult(
-            response=intent_response, conversation_id=user_input.conversation_id
-        )
-
         new_message = ChatMessage.user(user_input.text + ". Answer in syntactically perfect json and only json.")
 
         if user_input.conversation_id in self.history:
@@ -217,6 +210,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             _LOGGER.info('FULL ROUND:')
             async for msg in self.ai.full_round(user_input.text + ". Answer in syntactically perfect json and only json."):
                 _LOGGER.info(msg)
+                _LOGGER.info(msg.text)
         except error.OpenAIError as err:
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(
