@@ -37,8 +37,8 @@ async def get_ai(openai_key: str, abilities: [BaseAbility] = [], wrapper: Callab
         chat_history += history
         all_functions += functions
 
-    for fun in all_functions:
-        fun.inner = partial(wrapper, fun.inner)
+    # for fun in all_functions:
+    #     fun.inner = partial(wrapper, fun.inner)
 
     return Kani(
         engine=engine,
@@ -90,7 +90,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    asyncio.ensure_future(main())
-    loop.run_forever()
-    loop.close()
+    asyncio.run(main())

@@ -1,6 +1,6 @@
 """The OpenAI Conversation integration."""
 
-import requests
+import aiohttp
 import logging
 from kani import AIFunction, ChatMessage
 
@@ -79,28 +79,31 @@ Office:
 
     async def turn_on(self, entity: str = None, area: str = None):
         _LOGGER.debug(f'Calling turn_on, {locals()}')
-        response = requests.post(
-            f'{self.base_url}/api/services/homeassistant/turn_on',
-            headers=self.headers,
-            json={
-                **({'area_id': area} if area is not None else {}),
-                **({'entity_id': entity} if entity is not None else {}),
-            }
-        )
-        response.raise_for_status()
-        _LOGGER.debug(response.json())
-        return "Ok" if response.status_code == 200 else f"Sorry, I can't do that (got error {response.status_code})"
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f'{self.base_url}/api/services/homeassistant/turn_on',
+                headers=self.headers,
+                json={
+                    **({'area_id': area} if area is not None else {}),
+                    **({'entity_id': entity} if entity is not None else {}),
+                }
+            ) as response:
+                response.raise_for_status()
+                _LOGGER.debug(response.json())
+                return "Ok" if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
+
 
     async def turn_off(self, entity: str = None, area: str = None):
         _LOGGER.debug(f'Calling turn_off, {locals()}')
-        response = requests.post(
-            f'{self.base_url}/api/services/homeassistant/turn_off',
-            headers=self.headers,
-            json={
-                **({'area_id': area} if area is not None else {}),
-                **({'entity_id': entity} if entity is not None else {}),
-            }
-        )
-        response.raise_for_status()
-        _LOGGER.debug(response.json())
-        return "Ok" if response.status_code == 200 else f"Sorry, I can't do that (got error {response.status_code})"
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f'{self.base_url}/api/services/homeassistant/turn_off',
+                headers=self.headers,
+                json={
+                    **({'area_id': area} if area is not None else {}),
+                    **({'entity_id': entity} if entity is not None else {}),
+                }
+            ) as response:
+                response.raise_for_status()
+                _LOGGER.debug(response.json())
+                return "Ok" if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
