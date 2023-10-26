@@ -262,6 +262,10 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
 
         conversation_id = ulid.ulid()
 
+        _LOGGER.info('STARTING CONVERSATION')
+        _LOGGER.info(user_input.conversation_id)
+        _LOGGER.info(self.history)
+
         if user_input.conversation_id in self.history:
             conversation_id = user_input.conversation_id
             messages = self.history[conversation_id] + [new_message]
