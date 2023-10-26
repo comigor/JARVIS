@@ -7,8 +7,8 @@ from typing import Callable
 from kani import Kani, chat_in_terminal_async
 from kani.engines.openai import OpenAIEngine
 
-from abilities.homeassistant import HomeAssistantAbility
-from abilities.base import BaseAbility
+from .abilities.homeassistant import HomeAssistantAbility
+from .abilities.base import BaseAbility
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
