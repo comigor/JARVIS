@@ -179,18 +179,19 @@ class MyKani(Kani):
 
     @ai_function(json_schema={
         'properties': {
-            'entity': {'description': 'The entity to turn on, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
-            'area': {'description': 'The area to turn on all devices within, e.g. office, kitchen', 'type': 'string'}
+            'entity': {'description': 'An entity to turn on, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
+            'area': {'description': 'An area to turn on all devices within, e.g. office, kitchen', 'type': 'string'}
         },
         'required': [],
+        'optional': ['entity', 'area'],
         'type': 'object'
     })
-    async def turn_on_entity(
+    async def turn_on(
         self,
         entity,
         area,
     ):
-        """Turn on an especific entity or all entities of an area."""
+        """Turn on a specific entity or all entities of an area."""
         await self.hass.services.async_call(
             'homeassistant',
             'turn_on',
@@ -203,18 +204,19 @@ class MyKani(Kani):
 
     @ai_function(json_schema={
         'properties': {
-            'entity': {'description': 'The entity to turn off, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
-            'area': {'description': 'The area to turn off all devices within, e.g. office, kitchen', 'type': 'string'}
+            'entity': {'description': 'An entity to turn off, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
+            'area': {'description': 'An area to turn off all devices within, e.g. office, kitchen', 'type': 'string'}
         },
         'required': [],
+        'optional': ['entity', 'area'],
         'type': 'object'
     })
-    async def turn_off_entity(
+    async def turn_off(
         self,
         entity,
         area,
     ):
-        """Turn off an especific entity or all entities of an area."""
+        """Turn off a specific entity or all entities of an area."""
         await self.hass.services.async_call(
             'homeassistant',
             'turn_off',
