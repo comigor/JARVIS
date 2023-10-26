@@ -139,7 +139,11 @@ class MyKani(Kani):
         """Get the current weather in a given location."""
         return f"Weather in {location}: Sunny, 27 degrees celsius."
 
-    @ai_function()
+    @ai_function(json_schema={
+        'properties': {'location': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
+        'required': ['area'],
+        'type': 'object'
+    })
     def turn_on_lights(
         self,
         area: Annotated[str, AIParam(desc="The area in which the lights are, e.g. office, kitchen")],
@@ -152,7 +156,11 @@ class MyKani(Kani):
         )
         return f"Ok."
 
-    @ai_function()
+    @ai_function(json_schema={
+        'properties': {'location': {'description': 'The area in which the lights are, e.g. office, kitchen', 'type': 'string'}},
+        'required': ['area'],
+        'type': 'object'
+    })
     def turn_off_lights(
         self,
         area: Annotated[str, AIParam(desc="The area in which the lights are, e.g. office, kitchen")],
