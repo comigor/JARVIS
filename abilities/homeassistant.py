@@ -3,6 +3,7 @@
 import aiohttp
 import logging
 from kani import AIFunction, ChatMessage
+from typing import List
 
 from .base import BaseAbility
 
@@ -85,7 +86,7 @@ Office:
             ),
         ]
 
-    async def turn_on(self, entities: str = None):
+    async def turn_on(self, entities: List[str] = []):
         _LOGGER.debug(f'Calling turn_on, {locals()}')
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -100,7 +101,7 @@ Office:
                 return "Ok" if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
 
 
-    async def turn_off(self, entities: str = None):
+    async def turn_off(self, entities: List[str] = []):
         _LOGGER.debug(f'Calling turn_off, {locals()}')
         async with aiohttp.ClientSession() as session:
             async with session.post(
