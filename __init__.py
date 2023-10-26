@@ -17,9 +17,9 @@ from . import brains
 from .abilities.homeassistant import HomeAssistantAbility
 
 from .const import (
-    CONF_OPENAI_KEY,
-    CONF_HA_KEY,
-    CONF_HA_URL,
+    CONF_OPENAI_KEY_KEY,
+    CONF_HA_KEY_KEY,
+    CONF_HA_URL_KEY,
     DOMAIN,
 )
 
@@ -30,9 +30,9 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
-    openai_key = entry.data[CONF_OPENAI_KEY]
-    homeassistant_key = entry.data[CONF_HA_KEY]
-    homeassistant_url = entry.data[CONF_HA_URL]
+    openai_key = entry.data[CONF_OPENAI_KEY_KEY]
+    homeassistant_key = entry.data[CONF_HA_KEY_KEY]
+    homeassistant_url = entry.data[CONF_HA_URL_KEY]
 
     try:
         # await hass.async_add_executor_job(
