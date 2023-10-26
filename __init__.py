@@ -205,7 +205,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
                 await self.hass.async_add_executor_job(self.setup_ai)
                 self.ai = MyKani(
                     self.engine,
-                    system_prompt=ChatMessage.system(raw_prompt),
+                    system_prompt=raw_prompt,
                     chat_history=chat_history,
                 )
 
