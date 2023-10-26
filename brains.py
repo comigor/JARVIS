@@ -9,7 +9,7 @@ from kani.engines.openai import OpenAIEngine
 from abilities.homeassistant import HomeAssistantAbility
 from abilities.base import BaseAbility
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
 
 async def get_ai(openai_key: str, abilities: [BaseAbility] = []):
@@ -24,7 +24,7 @@ async def get_ai(openai_key: str, abilities: [BaseAbility] = []):
     for ability in abilities:
         _LOGGER.debug(f'\nRegistering ability: {ability.name}')
         prompt = ability.sys_prompt()
-        history = ability.chat_history()
+        history = await ability.chat_history()
         functions = ability.registered_functions()
 
         _LOGGER.debug(f'System prompt: {prompt}')
