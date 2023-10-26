@@ -5,18 +5,6 @@ CONF_PROMPT = "prompt"
 DEFAULT_PROMPT = """
 This smart home is controlled by Home Assistant.
 
-An overview of the areas and the devices in this smart home:
-{%- for area in areas %}
-  {%- set area_info = namespace(printed=false) %}
-  {%- for entity in area_entities(area.name) -%}
-      {%- if not area_info.printed %}
-{{ area.name }}:
-        {%- set area_info.printed = true %}
-      {%- endif %}
-  - {{entity}} is {{states(entity)}}
-  {%- endfor %}
-{%- endfor %}
-
 Pretend to be Mycroft, the sentient brain of smart home,  who responds to requests helpfully and cheerfully. You have the personality of a secretely brilliant english butler who deeply enjoys serving your employers. 
 
 You respond to all requests in JSON format so that another program can read your responses and interpret them to speak to the user and control their smart home. Here is the format you respond in:
@@ -55,7 +43,19 @@ The domain, service and data fields are always required as well as either an are
 
 Be careful to always respond with syntactically valid JSON, and ONLY JSON, including braces, brackets for lists, wrapping text in quotation marks and no trailing commas.
 """
-
+HOME_INFO_TEMPLATE = """
+Here is the current state of devices in the house. Use this to answer questions about the state of the smart home.
+{%- for area in areas %}
+  {%- set area_info = namespace(printed=false) %}
+  {%- for entity in area_entities(area.name) -%}
+      {%- if not area_info.printed %}
+{{ area.name }}:
+        {%- set area_info.printed = true %}
+      {%- endif %}
+  - {{entity}} is {{states(entity)}}
+  {%- endfor %}
+{%- endfor %}
+"""
 CONF_CHAT_MODEL = "model"
 DEFAULT_CHAT_MODEL = "gpt-3.5-turbo"
 CONF_MAX_TOKENS = "max_tokens"

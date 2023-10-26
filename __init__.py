@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from functools import partial
 import logging
-from typing import Literal
+from typing import Literal, Annotated
 
 import openai
 from openai import error
@@ -29,6 +29,9 @@ from homeassistant.util import ulid
 import json
 import traceback
 
+from kani import AIParam, Kani, ai_function, ChatMessage
+from kani.engines.openai import OpenAIEngine
+
 from .const import (
     CONF_CHAT_MODEL,
     CONF_MAX_TOKENS,
@@ -41,6 +44,7 @@ from .const import (
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_P,
     DOMAIN,
+    HOME_INFO_TEMPLATE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -115,6 +119,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
+class MyKani(Kani):
+    @ai_function()
+    def get_weather(
+        self,
+        location: Annotated[str, AIParam(desc="The city and state, e.g. San Francisco, CA")],
+    ):
+        """Get the current weather in a given location."""
+        return f"Weather in {location}: Sunny, 27 degrees celsius."
+
+
 class OpenAIAgent(conversation.AbstractConversationAgent):
     """OpenAI conversation agent."""
 
@@ -123,6 +137,9 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         self.hass = hass
         self.entry = entry
         self.history: dict[str, list[dict]] = {}
+
+        self.engine = OpenAIEngine(entry.data[CONF_API_KEY], model="gpt-3.5-turbo-0613", max_context_size=4096)
+        self.ai = None
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -138,111 +155,59 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         max_tokens = self.entry.options.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS)
         top_p = self.entry.options.get(CONF_TOP_P, DEFAULT_TOP_P)
         temperature = self.entry.options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
-        new_message = {
-            "role": "user",
-            "content": user_input.text
-            + " Answer in syntactically perfect json and only json,",
-        }
+
+        new_message = ChatMessage.user(user_input.text + ". Answer in syntactically perfect json and only json.")
 
         if user_input.conversation_id in self.history:
             conversation_id = user_input.conversation_id
             messages = self.history[conversation_id] + [new_message]
         else:
-            conversation_id = ulid.ulid()
+            conversaton_id = ulid.ulid()
+
             try:
-                prompt = self._async_generate_prompt(raw_prompt)
+                home_info_prompt = self._async_generate_prompt(HOME_INFO_TEMPLATE)
             except TemplateError as err:
                 _LOGGER.error("Error rendering prompt: %s", err)
                 intent_response = intent.IntentResponse(language=user_input.language)
                 intent_response.async_set_error(
                     intent.IntentResponseErrorCode.UNKNOWN,
-                    f"Sorry, I had a problem with my template: {err}",
+                    f"Sorry, I had a problem with my template: {err}\n{traceback.format_exc()}",
                 )
                 return conversation.ConversationResult(
-                    response=intent_response, conversation_id=conversation_id
+                    response=intent_response, conversation_id=conversaton_id
                 )
-            messages = [
-                {"role": "user", "content": prompt},
-                {"role": "assistant", "content": '{"comment":"Got it!"}'},
-                new_message,
+
+            _LOGGER.info('PROMPTERS:')
+            _LOGGER.info(home_info_prompt)
+
+            chat_history = [
+                ChatMessage.user(home_info_prompt),
+                ChatMessage.assistant('{"comment":"Got it!"}'),
             ]
 
-            # TODO: use function calls!
-
-        _LOGGER.debug("Prompt for %s: %s", model, messages)
-
-        intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_error(
-            intent.IntentResponseErrorCode.UNKNOWN,
-            f"{prompt}",
-        )
-        return conversation.ConversationResult(
-            response=intent_response, conversation_id=conversation_id
-        )
+            if self.ai == None:
+                self.ai = MyKani(
+                    self.engine,
+                    system_prompt=ChatMessage.system(raw_prompt),
+                    chat_history=chat_history,
+                )
 
         try:
-            result = await openai.ChatCompletion.acreate(
-                api_key=self.entry.data[CONF_API_KEY],
-                model=model,
-                messages=messages,
-                max_tokens=max_tokens,
-                top_p=top_p,
-                temperature=temperature,
-                user=conversation_id,
-            )
+            _LOGGER.info('FULL ROUND:')
+            async for msg in self.ai.full_round(user_input.text + ". Answer in syntactically perfect json and only json."):
+                _LOGGER.info(msg)
         except error.OpenAIError as err:
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(
                 intent.IntentResponseErrorCode.UNKNOWN,
-                f"Sorry, I had a problem talking to OpenAI: {err}",
+                f"Sorry, I had a problem talking to OpenAI: {err}\n{traceback.format_exc()}",
             )
-            return conversation.ConversationResult(
-                response=intent_response, conversation_id=conversation_id
-            )
-
-        _LOGGER.info("Response %s", result)
-        response = result["choices"][0]["message"]["content"]
-        self.history[conversation_id] = messages + [
-            {"role": "assistant", "content": response}
-        ]
-
-        try:
-            response = response.replace(",}", "}")
-            response_json = json.loads(response)
-            comment = response_json.get("comment")
-            response_json.pop('comment', None)
-        except Exception as err:
-            comment = f"Unable to parse: {response}\nError: {err}\n{traceback.format_exc()}"
-            intent_response = intent.IntentResponse(language=user_input.language)
-            intent_response.async_set_speech(comment)
-
-            return conversation.ConversationResult(
-                response=intent_response, conversation_id=conversation_id
-            )
-
-        try:
-            if (
-                "command" in response_json.keys()
-                and type(response_json["command"]) == dict
-            ):
-                await self.hass.services.async_call(
-                    response_json["command"]["domain"],
-                    response_json["command"]["service"],
-                    response_json["command"]["data"],
-                )
-        except Exception as err:
-            comment = f"""Unable to execute: {response_json["command"]['domain'], 
-                    response_json["command"]['service'],  
-                   response_json["command"]['data']} \n Error: {err}\n{traceback.format_exc()}"""
-            intent_response = intent.IntentResponse(language=user_input.language)
-            intent_response.async_set_speech(comment)
-
             return conversation.ConversationResult(
                 response=intent_response, conversation_id=conversation_id
             )
 
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(comment)
+        intent_response.async_set_speech('ok')
 
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
@@ -252,6 +217,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         _LOGGER.info('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
         _LOGGER.info(ar.async_get(self.hass))
         _LOGGER.info(list(ar.async_get(self.hass).areas.values()))
+
         """Generate a prompt for the user."""
         return template.Template(raw_prompt, self.hass).async_render(
             {
