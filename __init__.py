@@ -5,7 +5,6 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 import logging
 import traceback
-from functools import partial
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
@@ -13,7 +12,7 @@ from homeassistant.const import MATCH_ALL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, intent
 from homeassistant.util import ulid
-from typing import Literal, Callable
+from typing import Literal
 from kani import Kani
 
 from . import brains
@@ -38,13 +37,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     homeassistant_url = entry.data[CONF_HA_URL_KEY]
 
     try:
-        # await hass.async_add_executor_job(
-        #     partial(
-        #         openai.Engine.list,
-        #         api_key=entry.data[CONF_API_KEY],
-        #         request_timeout=10,
-        #     )
-        # )
         abilities = [
             HomeAssistantAbility(api_key=homeassistant_key, base_url=homeassistant_url),
         ]
@@ -90,14 +82,12 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         _LOGGER.info('STARTING CONVERSATION')
         _LOGGER.info(conversation_id)
 
-        last_msg = None
+        last_msg_text = None
         try:
             _LOGGER.info('FULL ROUND:')
             async for msg in self.ai.full_round(user_input.text):
-                _LOGGER.info(msg)
-                _LOGGER.info(msg.function_call)
-                _LOGGER.info(msg.text)
-                last_msg = msg.text
+                _LOGGER.info(f'msg: {msg}')
+                last_msg_text = msg.text
         except Exception as err:
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(
@@ -109,7 +99,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             )
 
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(last_msg)
+        intent_response.async_set_speech(last_msg_text)
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
         )

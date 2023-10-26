@@ -26,12 +26,12 @@ Pretend to be Jarvis, the sentient brain of smart home, who responds to requests
 
 Answer the user's questions about the world truthfully. Be careful not to issue commands if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
 
-Generally the commands (like turning on or off a device) can receive either area or entity, or both, but never none of them.'''
+Usually the commands (like turning on or off a device) will require a list ofentities to operate.'''
 
 
     def chat_history(self) -> [ChatMessage]:
         return [
-            ChatMessage.user('''Here is the current state of devices in the house. Use this to answer questions about the state of the smart home.
+            ChatMessage.user('''Here is the current state of devices in the house, by area they are present. Use this to answer questions about the state of the smart home.
 Living Room:
   - light.living_room_light_2 is off
   - light.living_room_light_1 is off
@@ -42,6 +42,8 @@ Bedroom:
 Office:
   - light.office_light is off
   - light.office is off
+  - switch.office_switch_1 is off
+  - switch.office_switch_2 is off
 '''),
             ChatMessage.assistant('Got it! Ready to help.'),
         ]
@@ -52,40 +54,45 @@ Office:
             AIFunction(
                 self.turn_on,
                 name='turn_on',
-                desc='Turn on a specific entity or all entities of an area. Specify either an entity or an area, but never none.',
+                desc='Turn on one or more entities.',
                 json_schema={
                     'properties': {
-                        'entity': {'description': 'An entity to turn on, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
-                        'area': {'description': 'An area to turn on all devices within, e.g. office, kitchen', 'type': 'string'}
+                        'entities': {
+                            'description': 'One or more entities to turn on, e.g. switch.office_switch_1, light.bedroom_light',
+                            'type': 'array',
+                            'items': {'type': 'string'},
+                        },
                     },
-                    'oneOf': [{'required': ['entity']}, {'required': ['area']}],
+                    'required': ['entities'],
                     'type': 'object'
                 }
             ),
             AIFunction(
                 self.turn_off,
                 name='turn_off',
-                desc='Turn off a specific entity or all entities of an area. Specify either an entity or an area, but never none.',
+                desc='Turn off one or more entities.',
                 json_schema={
                     'properties': {
-                        'entity': {'description': 'An entity to turn off, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
-                        'area': {'description': 'An area to turn off all devices within, e.g. office, kitchen', 'type': 'string'}
+                        'entities': {
+                            'description': 'One or more entities to turn off, e.g. switch.office_switch_1, light.bedroom_light',
+                            'type': 'array',
+                            'items': {'type': 'string'},
+                        },
                     },
-                    'oneOf': [{'required': ['entity']}, {'required': ['area']}],
+                    'required': ['entities'],
                     'type': 'object'
                 }
             ),
         ]
 
-    async def turn_on(self, entity: str = None, area: str = None):
+    async def turn_on(self, entities: str = None):
         _LOGGER.debug(f'Calling turn_on, {locals()}')
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f'{self.base_url}/api/services/homeassistant/turn_on',
                 headers=self.headers,
                 json={
-                    **({'area_id': area} if area is not None else {}),
-                    **({'entity_id': entity} if entity is not None else {}),
+                    **({'entity_id': entities} if entities is not None else {}),
                 }
             ) as response:
                 response.raise_for_status()
@@ -93,15 +100,14 @@ Office:
                 return "Ok" if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
 
 
-    async def turn_off(self, entity: str = None, area: str = None):
+    async def turn_off(self, entities: str = None):
         _LOGGER.debug(f'Calling turn_off, {locals()}')
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f'{self.base_url}/api/services/homeassistant/turn_off',
                 headers=self.headers,
                 json={
-                    **({'area_id': area} if area is not None else {}),
-                    **({'entity_id': entity} if entity is not None else {}),
+                    **({'entity_id': entities} if entities is not None else {}),
                 }
             ) as response:
                 response.raise_for_status()
