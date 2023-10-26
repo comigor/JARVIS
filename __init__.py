@@ -249,6 +249,9 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
         )
 
     def _async_generate_prompt(self, raw_prompt: str) -> str:
+        _LOGGER.info('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+        _LOGGER.info(ar.async_get(self.hass))
+        _LOGGER.info(list(ar.async_get(self.hass).areas.values()))
         """Generate a prompt for the user."""
         return template.Template(raw_prompt, self.hass).async_render(
             {
