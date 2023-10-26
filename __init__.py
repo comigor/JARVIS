@@ -182,6 +182,7 @@ class MyKani(Kani):
             'entity': {'description': 'An entity to turn on, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
             'area': {'description': 'An area to turn on all devices within, e.g. office, kitchen', 'type': 'string'}
         },
+        'oneOf': [{'required': ['entity']}, {'required': ['area']}],
         'type': 'object'
     })
     async def turn_on(self, entity=None, area=None):
@@ -201,6 +202,7 @@ class MyKani(Kani):
             'entity': {'description': 'An entity to turn off, e.g. switch.office_switch_1, light.bedroom_light', 'type': 'string'},
             'area': {'description': 'An area to turn off all devices within, e.g. office, kitchen', 'type': 'string'}
         },
+        'oneOf': [{'required': ['entity']}, {'required': ['area']}],
         'type': 'object'
     })
     async def turn_off(self, entity=None, area=None):
