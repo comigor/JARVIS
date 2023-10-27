@@ -35,11 +35,11 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
-    openai_key = entry.options.get(CONF_OPENAI_KEY_KEY)
-    homeassistant_key = entry.options.get(CONF_HA_KEY_KEY)
-    homeassistant_url = entry.options.get(CONF_HA_URL_KEY)
-    google_api_key = entry.options.get(CONF_GOOGLE_API_KEY)
-    google_cx_key = entry.options.get(CONF_GOOGLE_CX_KEY)
+    openai_key = entry.data[CONF_OPENAI_KEY_KEY]
+    homeassistant_key = entry.data[CONF_HA_KEY_KEY]
+    homeassistant_url = entry.data[CONF_HA_URL_KEY]
+    google_api_key = entry.data[CONF_GOOGLE_API_KEY]
+    google_cx_key = entry.data[CONF_GOOGLE_CX_KEY]
 
     try:
         abilities = []
