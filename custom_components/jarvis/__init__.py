@@ -35,11 +35,6 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
-    _LOGGER.debug(entry)
-    _LOGGER.debug(entry.data)
-    _LOGGER.debug(entry.data.items())
-    _LOGGER.debug(entry.data.keys())
-    _LOGGER.debug(entry.options)
     openai_key = entry.data.get(CONF_OPENAI_KEY_KEY)
     homeassistant_key = entry.data.get(CONF_HA_KEY_KEY)
     homeassistant_url = entry.data.get(CONF_HA_URL_KEY)
@@ -66,7 +61,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, ai: Kani, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload OpenAI."""
     hass.data[DOMAIN].pop(entry.entry_id)
     conversation.async_unset_agent(hass, entry)

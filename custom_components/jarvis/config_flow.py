@@ -17,7 +17,6 @@ from .const import (
     CONF_OPENAI_KEY_KEY,
     CONF_HA_KEY_KEY,
     CONF_HA_URL_KEY,
-    DEFAULT_HA_URL,
     CONF_GOOGLE_API_KEY,
     CONF_GOOGLE_CX_KEY,
 )
@@ -28,10 +27,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_OPENAI_KEY_KEY): str,
         vol.Optional(CONF_HA_KEY_KEY): str,
-        vol.Optional(
-            CONF_HA_URL_KEY,
-            description={'suggested_value': 'http://127.0.0.1:8123'},
-        ): str,
+        vol.Optional(CONF_HA_URL_KEY): str,
         vol.Optional(CONF_GOOGLE_API_KEY): str,
         vol.Optional(CONF_GOOGLE_CX_KEY): str,
     }
@@ -106,7 +102,7 @@ DEFAULT_OPTIONS = types.MappingProxyType(
     {
         CONF_OPENAI_KEY_KEY: '',
         CONF_HA_KEY_KEY: '',
-        CONF_HA_URL_KEY: DEFAULT_HA_URL,
+        CONF_HA_URL_KEY: '',
         CONF_GOOGLE_API_KEY: '',
         CONF_GOOGLE_CX_KEY: '',
     }
@@ -127,7 +123,7 @@ def openai_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
         ): str,
         vol.Optional(
             CONF_HA_URL_KEY,
-            description={'suggested_value': options.get(CONF_HA_URL_KEY, DEFAULT_HA_URL)},
+            description={'suggested_value': options.get(CONF_HA_URL_KEY, '')},
             default=DEFAULT_HA_URL,
         ): str,
         vol.Optional(
