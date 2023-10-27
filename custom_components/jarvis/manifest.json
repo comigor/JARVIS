@@ -1,6 +1,6 @@
 {
   "domain": "jarvis",
-  "name": "Jarvis Conversation",
+  "name": "J.A.R.V.I.S.",
   "codeowners": ["@comigor"],
   "config_flow": true,
   "version": "0.0.1",

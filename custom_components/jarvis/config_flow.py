@@ -68,7 +68,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
-            return self.async_create_entry(title="Jarvis Conversation", data=user_input)
+            return self.async_create_entry(title="J.A.R.V.I.S.", data=user_input)
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
@@ -94,7 +94,7 @@ class OptionsFlow(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(title="Jarvis Conversation", data=user_input)
+            return self.async_create_entry(title="J.A.R.V.I.S.", data=user_input)
         schema = openai_config_option_schema(self.config_entry.options)
         return self.async_show_form(
             step_id="init",

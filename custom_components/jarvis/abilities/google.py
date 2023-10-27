@@ -1,4 +1,4 @@
-# Some code from https://github.com/KoljaB/Linguflex/blob/main/modules/basic/google_information.py
+# Code from https://github.com/KoljaB/Linguflex/blob/main/modules/basic/google_information.py
 
 import logging
 from kani import AIFunction, ChatMessage

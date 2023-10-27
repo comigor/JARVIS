@@ -2,7 +2,14 @@
 An implementation of ChatGPT as a conversation agent that can actually control your home.
 
 ## Installation
-For now, add this as a custom repository to HACS, reboot your machine and then add it through the gui integration config flow. The first dialog asks for your OpenAI API key (though it may not say that - I have no idea why it's just a blank box with a text input) which you can obtain from [OpenAI](https://platform.openai.com/account/api-keys), HomeAssistant long-lived access token, and HomeAssistant server URL. After that, it should work.
+For now, add this as a custom repository to HACS, reboot your instance and then add it through the GUI integration config flow. The dialog will ask for (though it may not say that - I have no idea why it's just a blank box with a text input):
+* OpenAI API key which you can obtain from [OpenAI](https://platform.openai.com/account/api-keys)
+* HomeAssistant [long-lived access token](http://127.0.0.1:8123/profile)
+* HomeAssistant server URL (like `http://127.0.0.1:8123`)
+
+Then, go to [Voice assistants](http://127.0.0.1:8123/config/voice-assistants/assistants), create a new assistant and change the "Conversation agent" to "J.A.R.V.I.S."
+
+After that, it should work.
 
 ## How does it work?
 By connecting "abilities" (as ChatGPT function calls).
