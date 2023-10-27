@@ -2,14 +2,11 @@
 An implementation of ChatGPT as a conversation agent that can actually control your home.
 
 ## Installation
-For now, add this as a custom repository to HACS, reboot your instance and then add it through the GUI integration config flow. The dialog will ask for (though it may not say that - I have no idea why it's just a blank box with a text input):
-* OpenAI API key which you can obtain from [OpenAI](https://platform.openai.com/account/api-keys)
-* HomeAssistant [long-lived access token](http://127.0.0.1:8123/profile)
-* HomeAssistant server URL (e.g. `http://127.0.0.1:8123`)
+For now, add this as a custom repository to HACS, reboot your instance and then add it through the GUI integration config flow.
+
+Currently, J.A.R.V.I.S. only works with OpenAI's ChatGPT, so their key is required. Both Home Assistant and Google configuration are optional, provide them if you want to enable those abilities. Without any ability configured, J.A.R.V.I.S. will still answer questions as if it was ChatGPT.
 
 Then, go to [Voice assistants](http://127.0.0.1:8123/config/voice-assistants/assistants), create a new assistant and change the "Conversation agent" to "J.A.R.V.I.S."
-
-After that, it should work.
 
 ## How does it work?
 By connecting "abilities" (as ChatGPT function calls).
