@@ -13,3 +13,13 @@ Mostly by instructing ChatGPT to reply in json format, including a 'comment' whi
 2. Your data (include a fair amount of data about entities in your home) is being pumped over the internet. I'm not worried by what is exposed (and it is over a secure connection) - if a hacker can do something useful with the entities created by home-assistant, they already have a lot of access to my home. But you should be aware and make a thoughtful decision. 
 3. ChatGPT is limited to around 4k tokens (~3k words) per session. Passing all those entities and their current states chews up a fair number of tokens, depending on how much HA stuff you have. You may hit that limit after only a few requests. Shutting the chat window and refreshing your browser starts a new ssession. (there are probably smarter ways to deal with this, I might improve it later if I feel like it and have time).
 4. It's slower than I'd like - not sure if there is anything I can do on my end to fix that (probably a little). 
+
+## TODO
+* calendar
+* remind me
+* audio warning to speakers
+* control music
+* ifood
+    * https://gist.github.com/donkawechico/30399f34fa88f0c560f9eb0c756d2efa
+    * https://community.home-assistant.io/t/fetching-a-token-every-hour/167434/8
+* plex

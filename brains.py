@@ -6,10 +6,11 @@ import asyncio
 from kani import Kani, chat_in_terminal_async
 from kani.engines.openai import OpenAIEngine
 
-from abilities.homeassistant import HomeAssistantAbility
 from abilities.base import BaseAbility
+from abilities.homeassistant import HomeAssistantAbility
+from abilities.google import GoogleAbility
 
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
 
 async def get_ai(openai_key: str, abilities: [BaseAbility] = []):
@@ -45,6 +46,7 @@ async def get_ai(openai_key: str, abilities: [BaseAbility] = []):
 async def main():
     abilities = [
         HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443'),
+        GoogleAbility(api_key=os.getenv('GOOGLE_API_KEY'), cx_key=os.getenv('GOOGLE_CX_KEY')),
     ]
     openai_key = os.getenv('OPENAI_KEY')
     ai = await get_ai(openai_key=openai_key, abilities=abilities)
