@@ -1,24 +1,44 @@
 {
   "config": {
     "step": {
-      "user": {
+      "init": {
         "title": "Configure J.A.R.V.I.S.",
+        "description": "Config description",
         "data": {
-          "openai_key": "OpenAI ChatGPT key",
-          "homeassistant_key": "HomeAssistant long-lived access token",
-          "homeassistant_url": "HomeAssistant URL (e.g. http://127.0.0.1:8123)"
+          "openai_key": "1Required: OpenAI ChatGPT key",
+          "homeassistant_key": "1Optional: HomeAssistant long-lived access token",
+          "homeassistant_url": "1Optional: HomeAssistant URL (e.g. http://127.0.0.1:8123)",
+          "google_api_key": "1Optional: API key from https://console.cloud.google.com/apis/credentials (after enabling Custom Search API)",
+          "google_cx_key": "1Optional: Get it from http://www.google.com/cse/manage/all"
+        },
+        "data_description": {
+          "openai_key": "2Required: OpenAI ChatGPT key",
+          "homeassistant_key": "2Optional: HomeAssistant long-lived access token",
+          "homeassistant_url": "2Optional: HomeAssistant URL (e.g. http://127.0.0.1:8123)",
+          "google_api_key": "2Optional: API key from https://console.cloud.google.com/apis/credentials (after enabling Custom Search API)",
+          "google_cx_key": "2Optional: Get it from http://www.google.com/cse/manage/all"
         }
       }
     }
   },
   "options": {
     "step": {
-      "user": {
+      "init": {
         "title": "Configure J.A.R.V.I.S.",
+        "description": "Options description",
         "data": {
-          "openai_key": "OpenAI ChatGPT key",
-          "homeassistant_key": "HomeAssistant long-lived access token",
-          "homeassistant_url": "HomeAssistant URL (e.g. http://127.0.0.1:8123)"
+          "openai_key": "3Required: OpenAI ChatGPT key",
+          "homeassistant_key": "3Optional: HomeAssistant long-lived access token",
+          "homeassistant_url": "3Optional: HomeAssistant URL (e.g. http://127.0.0.1:8123)",
+          "google_api_key": "3Optional: API key from https://console.cloud.google.com/apis/credentials (after enabling Custom Search API)",
+          "google_cx_key": "3Optional: Get it from http://www.google.com/cse/manage/all"
+        },
+        "data_description": {
+          "openai_key": "4Required: OpenAI ChatGPT key",
+          "homeassistant_key": "4Optional: HomeAssistant long-lived access token",
+          "homeassistant_url": "4Optional: HomeAssistant URL (e.g. http://127.0.0.1:8123)",
+          "google_api_key": "4Optional: API key from https://console.cloud.google.com/apis/credentials (after enabling Custom Search API)",
+          "google_cx_key": "4Optional: Get it from http://www.google.com/cse/manage/all"
         }
       }
     }

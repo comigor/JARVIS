@@ -17,12 +17,15 @@ from kani import Kani
 
 from . import brains
 from .abilities.homeassistant import HomeAssistantAbility
+from .abilities.google import GoogleAbility
 
 from .const import (
     CONF_OPENAI_KEY_KEY,
     CONF_HA_KEY_KEY,
     CONF_HA_URL_KEY,
     DOMAIN,
+    CONF_GOOGLE_API_KEY,
+    CONF_GOOGLE_CX_KEY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,11 +38,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     openai_key = entry.data[CONF_OPENAI_KEY_KEY]
     homeassistant_key = entry.data[CONF_HA_KEY_KEY]
     homeassistant_url = entry.data[CONF_HA_URL_KEY]
+    google_api_key = entry.data[CONF_GOOGLE_API_KEY]
+    google_cx_key = entry.data[CONF_GOOGLE_CX_KEY]
 
     try:
-        abilities = [
-            HomeAssistantAbility(api_key=homeassistant_key, base_url=homeassistant_url),
-        ]
+        abilities = []
+
+        abilities.extend([HomeAssistantAbility(api_key=homeassistant_key, base_url=homeassistant_url)]
+                         if (homeassistant_key and homeassistant_url) else [])
+        abilities.extend([GoogleAbility(api_key=google_api_key, cx_key=google_cx_key)]
+                         if (google_api_key and google_cx_key) else [])
+
         ai = await brains.get_ai(openai_key=openai_key, abilities=abilities)
 
     except Exception as err:

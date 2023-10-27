@@ -18,6 +18,8 @@ from .const import (
     CONF_HA_KEY_KEY,
     CONF_HA_URL_KEY,
     DEFAULT_HA_URL,
+    CONF_GOOGLE_API_KEY,
+    CONF_GOOGLE_CX_KEY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,20 +27,13 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_OPENAI_KEY_KEY): str,
-        vol.Required(CONF_HA_KEY_KEY): str,
+        vol.Optional(CONF_HA_KEY_KEY): str,
         vol.Optional(
             CONF_HA_URL_KEY,
-            default='http://127.0.0.1:8123',
-            description={"suggested_value": "http://127.0.0.1:8123"},
+            description={'suggested_value': 'http://127.0.0.1:8123'},
         ): str,
-    }
-)
-
-DEFAULT_OPTIONS = types.MappingProxyType(
-    {
-        CONF_OPENAI_KEY_KEY: '',
-        CONF_HA_KEY_KEY: '',
-        CONF_HA_URL_KEY: DEFAULT_HA_URL,
+        vol.Optional(CONF_GOOGLE_API_KEY): str,
+        vol.Optional(CONF_GOOGLE_CX_KEY): str,
     }
 )
 
@@ -62,7 +57,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         if user_input is None:
             return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+                step_id="init", data_schema=STEP_USER_DATA_SCHEMA
             )
 
         errors = {}
@@ -76,7 +71,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(title="J.A.R.V.I.S.", data=user_input)
 
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id="init", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
     @staticmethod
@@ -107,6 +102,16 @@ class OptionsFlow(config_entries.OptionsFlow):
         )
 
 
+DEFAULT_OPTIONS = types.MappingProxyType(
+    {
+        CONF_OPENAI_KEY_KEY: '',
+        CONF_HA_KEY_KEY: '',
+        CONF_HA_URL_KEY: DEFAULT_HA_URL,
+        CONF_GOOGLE_API_KEY: '',
+        CONF_GOOGLE_CX_KEY: '',
+    }
+)
+
 def openai_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
     """Return a schema for OpenAI completion options."""
     if not options:
@@ -114,15 +119,23 @@ def openai_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
     return {
         vol.Required(
             CONF_OPENAI_KEY_KEY,
-            description={'suggested_value': options.get(CONF_OPENAI_KEY_KEY, 'OpenAI key')},
+            description={'suggested_value': options.get(CONF_OPENAI_KEY_KEY, '')},
         ): str,
-        vol.Required(
+        vol.Optional(
             CONF_HA_KEY_KEY,
-            description={'suggested_value': options.get(CONF_HA_KEY_KEY, 'HomeAssistant long-lived access token')},
+            description={'suggested_value': options.get(CONF_HA_KEY_KEY, '')},
         ): str,
         vol.Optional(
             CONF_HA_URL_KEY,
             description={'suggested_value': options.get(CONF_HA_URL_KEY, DEFAULT_HA_URL)},
             default=DEFAULT_HA_URL,
+        ): str,
+        vol.Optional(
+            CONF_GOOGLE_API_KEY,
+            description={'suggested_value': options.get(CONF_GOOGLE_API_KEY, '')},
+        ): str,
+        vol.Optional(
+            CONF_GOOGLE_CX_KEY,
+            description={'suggested_value': options.get(CONF_GOOGLE_CX_KEY, '')},
         ): str,
     }
