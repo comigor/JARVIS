@@ -137,10 +137,6 @@ Usually the commands (like turning on or off a device) will require a list ofent
                             'type': 'array',
                             'items': {'type': 'integer'},
                         },
-                        'color_name': {
-                            'description': 'A human-readable color name.',
-                            'type': 'string',
-                        },
                         'brightness_pct': {
                             'description': 'Number indicating the percentage of full brightness, where 0 turns the light off, 1 is the minimum brightness, and 100 is the maximum brightness.',
                             'type': 'integer',
@@ -192,7 +188,7 @@ Usually the commands (like turning on or off a device) will require a list ofent
                 _LOGGER.debug(json)
                 return json if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
 
-    async def turn_on_lights(self, entities: List[str] = [], transition: float = None, rgbw_color: List[int] = None, color_name: str = None, brightness_pct: int = None):
+    async def turn_on_lights(self, entities: List[str] = [], transition: float = None, rgbw_color: List[int] = None, brightness_pct: int = None):
         _LOGGER.debug(f'Calling turn_on_lights, {locals()}')
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -202,7 +198,6 @@ Usually the commands (like turning on or off a device) will require a list ofent
                     **({'entity_id': entities} if entities is not None else {}),
                     **({'transition': transition} if transition is not None else {}),
                     **({'rgbw_color': rgbw_color} if rgbw_color is not None else {}),
-                    **({'color_name': color_name} if color_name is not None else {}),
                     **({'brightness_pct': brightness_pct} if brightness_pct is not None else {}),
                 }
             ) as response:
