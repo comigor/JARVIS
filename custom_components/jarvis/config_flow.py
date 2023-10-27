@@ -15,6 +15,8 @@ from homeassistant.data_entry_flow import FlowResult
 from .const import (
     DOMAIN,
     CONF_OPENAI_KEY_KEY,
+    CONF_LLM_API_BASE_KEY,
+    CONF_LLM_MODEL_KEY,
     CONF_HA_KEY_KEY,
     CONF_HA_URL_KEY,
     CONF_GOOGLE_API_KEY,
@@ -26,6 +28,8 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_OPENAI_KEY_KEY): str,
+        vol.Optional(CONF_LLM_API_BASE_KEY): str,
+        vol.Optional(CONF_LLM_MODEL_KEY): str,
         vol.Optional(CONF_HA_KEY_KEY): str,
         vol.Optional(CONF_HA_URL_KEY): str,
         vol.Optional(CONF_GOOGLE_API_KEY): str,

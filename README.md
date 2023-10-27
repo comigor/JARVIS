@@ -42,3 +42,9 @@ poetry run python custom_components/jarvis/brains.py
     * https://gist.github.com/donkawechico/30399f34fa88f0c560f9eb0c756d2efa
     * https://community.home-assistant.io/t/fetching-a-token-every-hour/167434/8
 * plex? (+sonarr/radarr)
+
+
+TRY:
+* https://www.reddit.com/r/LocalLLaMA/comments/16bik9d/comment/jzjtd7u/?utm_source=share&utm_medium=web2x&context=3
+* https://huggingface.co/TheBloke/Airoboros-33B-2.1-GPTQ#agentfunction-calling
+* understand why langchain/instructor/actionweaver/openai_functions/manual doesn't work with locaAI (what happens with "functions" argument on the API?)

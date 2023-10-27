@@ -9,10 +9,15 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "3.11.6"
 homeassistant = "2023.10.5"
-openai = "^0.28.1"
-kani = {extras = ["openai"], version = "^0.5.1"}
+openai = "^0.27.8"
+kani = {extras = ["huggingface", "llama", "openai"], version = "^0.5.1"}
 aiohttp = "3.8.5"
 google-api-python-client = "^2.105.0"
+langchain = "^0.0.325"
+numexpr = "^2.8.7"
+#instructor = "^0.2.9"
+#actionweaver = "^0.0.10"
+openai-functions = "^1.0.2"
 
 [build-system]
 requires = ["poetry-core"]

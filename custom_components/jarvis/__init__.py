@@ -21,6 +21,8 @@ from .abilities.google import GoogleAbility
 
 from .const import (
     CONF_OPENAI_KEY_KEY,
+    CONF_LLM_API_BASE_KEY,
+    CONF_LLM_MODEL_KEY,
     CONF_HA_KEY_KEY,
     CONF_HA_URL_KEY,
     DOMAIN,
@@ -36,8 +38,10 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
     openai_key = entry.data.get(CONF_OPENAI_KEY_KEY)
+    llm_api_base = entry.data.get(CONF_LLM_API_BASE_KEY, 'https://api.openai.com/v1')
+    llm_model = entry.data.get(CONF_LLM_MODEL_KEY, 'gpt-3.5-turbo')
     homeassistant_key = entry.data.get(CONF_HA_KEY_KEY)
-    homeassistant_url = entry.data.get(CONF_HA_URL_KEY)
+    homeassistant_url = entry.data.get(CONF_HA_URL_KEY, 'http://127.0.0.1:8123')
     google_api_key = entry.data.get(CONF_GOOGLE_API_KEY)
     google_cx_key = entry.data.get(CONF_GOOGLE_CX_KEY)
 
@@ -49,7 +53,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         abilities.extend([GoogleAbility(api_key=google_api_key, cx_key=google_cx_key)]
                          if (google_api_key and google_cx_key) else [])
 
-        ai = await brains.get_ai(openai_key=openai_key, abilities=abilities)
+        ai = await brains.get_ai(
+            openai_key=openai_key,
+            api_base=llm_api_base,
+            model=llm_model,
+            abilities=abilities,
+        )
 
     except Exception as err:
         _LOGGER.error(f"Sorry, I had a problem: {err}\n{traceback.format_exc()}")
