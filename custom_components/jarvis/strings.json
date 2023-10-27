@@ -2,49 +2,23 @@
   "config": {
     "step": {
       "user": {
+        "title": "Configure J.A.R.V.I.S.",
         "data": {
-          "openai_key": "[%key:common::config_flow::data::openai_key%]",
-          "homeassistant_key": "[%key:common::config_flow::data::homeassistant_key%]",
-          "homeassistant_url": "[%key:common::config_flow::data::homeassistant_url%]"
+          "openai_key": "OpenAI ChatGPT key",
+          "homeassistant_key": "HomeAssistant long-lived access token",
+          "homeassistant_url": "HomeAssistant URL (e.g. http://127.0.0.1:8123)"
         }
       }
-    },
-    "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
     }
   },
   "options": {
     "step": {
-      "init": {
+      "user": {
+        "title": "Configure J.A.R.V.I.S.",
         "data": {
-          "prompt": "Prompt Template",
-          "model": "Completion Model",
-          "max_tokens": "Maximum tokens to return in response",
-          "temperature": "Temperature",
-          "top_p": "Top P"
-        }
-      }
-    }
-  },
-  "services": {
-    "generate_image": {
-      "name": "Generate image",
-      "description": "Turn a prompt into an image",
-      "fields": {
-        "config_entry": {
-          "name": "Config Entry",
-          "description": "The config entry to use for this service"
-        },
-        "prompt": {
-          "name": "Prompt",
-          "description": "The text to turn into an image",
-          "example": "A photo of a dog"
-        },
-        "size": {
-          "name": "Size",
-          "description": "The size of the image to generate"
+          "openai_key": "OpenAI ChatGPT key",
+          "homeassistant_key": "HomeAssistant long-lived access token",
+          "homeassistant_url": "HomeAssistant URL (e.g. http://127.0.0.1:8123)"
         }
       }
     }

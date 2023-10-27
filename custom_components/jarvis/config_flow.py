@@ -26,7 +26,11 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_OPENAI_KEY_KEY): str,
         vol.Required(CONF_HA_KEY_KEY): str,
-        vol.Required(CONF_HA_URL_KEY): str,
+        vol.Optional(
+            CONF_HA_URL_KEY,
+            default='http://127.0.0.1:8123',
+            description={"suggested_value": "http://127.0.0.1:8123"},
+        ): str,
     }
 )
 
@@ -44,6 +48,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
+    # TODO: validate
     pass
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
