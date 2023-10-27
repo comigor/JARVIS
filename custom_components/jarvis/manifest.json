@@ -1,5 +1,5 @@
 {
-  "domain": "openaiconversationenhanced",
+  "domain": "jarvis",
   "name": "Jarvis Conversation",
   "codeowners": ["@comigor"],
   "config_flow": true,

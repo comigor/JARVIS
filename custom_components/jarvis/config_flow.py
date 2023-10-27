@@ -113,7 +113,7 @@ def openai_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
         ): str,
         vol.Required(
             CONF_HA_KEY_KEY,
-            description={'suggested_value': options.get(CONF_HA_KEY_KEY, 'HomeAssistant long-lived access tokens')},
+            description={'suggested_value': options.get(CONF_HA_KEY_KEY, 'HomeAssistant long-lived access token')},
         ): str,
         vol.Optional(
             CONF_HA_URL_KEY,

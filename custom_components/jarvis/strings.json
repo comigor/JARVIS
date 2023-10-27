@@ -3,7 +3,9 @@
     "step": {
       "user": {
         "data": {
-          "api_key": "[%key:common::config_flow::data::api_key%]"
+          "openai_key": "[%key:common::config_flow::data::openai_key%]",
+          "homeassistant_key": "[%key:common::config_flow::data::homeassistant_key%]",
+          "homeassistant_url": "[%key:common::config_flow::data::homeassistant_url%]"
         }
       }
     },

@@ -43,9 +43,9 @@ async def get_ai(openai_key: str, abilities: [BaseAbility] = []):
         functions=all_functions,
     )
 
-async def main():
+async def main_development():
     abilities = [
-        HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url='https://homeassistant.brick.borges.me:2443'),
+        HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url=os.getenv('HOMEASSISTANT_URL')),
         GoogleAbility(api_key=os.getenv('GOOGLE_API_KEY'), cx_key=os.getenv('GOOGLE_CX_KEY')),
     ]
     openai_key = os.getenv('OPENAI_KEY')
@@ -55,4 +55,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    asyncio.run(main_development())

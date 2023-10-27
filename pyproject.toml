@@ -1,30 +1,9 @@
-[project]
-name = "openaiconversationenhanced"
-version = "0.1.0"
-description = "Add your description here"
-authors = [
-    { name = "Igor Borges", email = "igor@borges.dev" }
-]
-dependencies = [
-    "homeassistant>=2023.10.5",
-    "openai>=0.28.1",
-]
-readme = "README.md"
-requires-python = ">= 3.11"
-
-[tool.rye]
-managed = true
-dev-dependencies = []
-
-#[build-system]
-#requires = ["hatchling"]
-#build-backend = "hatchling.build"
-
 [tool.poetry]
-name = "openaiconversationenhanced"
+name = "jarvis"
 version = "0.1.0"
 description = ""
 authors = ["Igor Borges <igor@borges.dev>"]
+license = "Apache License 2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
