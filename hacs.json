@@ -3,6 +3,6 @@
   "render_readme": true,
   "iot_class": "cloud_push",
   "content_in_root": false,
-  "domains": ["conversation"],
+  "domains": ["jarvis"],
   "zip_release": false,
 }
