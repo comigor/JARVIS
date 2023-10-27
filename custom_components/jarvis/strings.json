@@ -1,7 +1,7 @@
 {
   "config": {
     "step": {
-      "init": {
+      "user": {
         "title": "Configure J.A.R.V.I.S.",
         "description": "Config description",
         "data": {
