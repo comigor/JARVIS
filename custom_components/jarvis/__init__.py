@@ -57,7 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_OPENAI_KEY_KEY]
 
-    conversation.async_set_agent(hass, entry, OpenAIAgent(hass, ai, entry))
+    conversation.async_set_agent(hass, entry, JARVISAgent(hass, ai, entry))
     return True
 
 
@@ -68,8 +68,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-class OpenAIAgent(conversation.AbstractConversationAgent):
-    """OpenAI conversation agent."""
+class JARVISAgent(conversation.AbstractConversationAgent):
+    """JARVIS conversation agent."""
 
     def __init__(self, hass: HomeAssistant, ai: Kani, entry: ConfigEntry) -> None:
         """Initialize the agent."""

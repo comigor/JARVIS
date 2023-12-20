@@ -13,6 +13,9 @@ openai = "^0.28.1"
 kani = {extras = ["openai"], version = "^0.5.1"}
 aiohttp = "3.8.5"
 google-api-python-client = "^2.105.0"
+langchain = "^0.0.351"
+yfinance = "0.2.31"
+langchain-experimental = "^0.0.47"
 
 [build-system]
 requires = ["poetry-core"]
