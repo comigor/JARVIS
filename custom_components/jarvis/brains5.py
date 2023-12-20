@@ -4,9 +4,10 @@ import openai
 from openai_functions import Conversation
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
-# openai.api_base = 'http://127.0.0.1:8080/v1'
+openai.api_base = 'http://127.0.0.1:8080/v1'
+model = 'thebloke__airoboros-m-7b-3.1.2-gguf__airoboros-m-7b-3.1.2.q5_k_m.gguf'
 
-conversation = Conversation()
+conversation = Conversation(model=model)
 
 class Unit(enum.Enum):
     FAHRENHEIT = "fahrenheit"
@@ -27,6 +28,6 @@ def get_current_weather(location: str, unit: Unit = Unit.FAHRENHEIT) -> dict:
         "forecast": ["sunny", "windy"],
     }
 
-response = conversation.ask("What's the weather in San Francisco?")
+response = conversation.ask("What's the weather in celsius in San Francisco?")
 
 print(response)

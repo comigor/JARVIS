@@ -3,6 +3,8 @@ import json
 
 # openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.api_base = 'http://127.0.0.1:8080/v1'
+# model = 'thebloke__open-llama-7b-open-instruct-ggml__open-llama-7b-open-instruct.ggmlv3.q4_0.bin'
+model = 'thebloke__airoboros-m-7b-3.1.2-gguf__airoboros-m-7b-3.1.2.q5_k_m.gguf'
 
 # Example dummy function hard coded to return the same weather
 # In production, this could be your backend API or an external API
@@ -19,7 +21,7 @@ def get_current_weather(location, unit="fahrenheit"):
 
 def run_conversation():
     # Step 1: send the conversation and available functions to GPT
-    messages = [{"role": "user", "content": "What's the weather like in Boston?"}]
+    messages = [{"role": "user", "content": "What's the temperature in celsius in Sao Paulo right now?"}]
     functions = [
         {
             "name": "get_current_weather",
@@ -38,11 +40,12 @@ def run_conversation():
         }
     ]
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model=model,
         messages=messages,
         functions=functions,
         function_call="auto",  # auto is default, but we'll be explicit
     )
+    print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     print(response)
     response_message = response["choices"][0]["message"]
 
@@ -70,11 +73,14 @@ def run_conversation():
                 "content": function_response,
             }
         )  # extend conversation with function response
+        print('bbbbbbbbbbbbbbbbbbbbbbbbbb')
+        print(messages)
         second_response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model=model,
             messages=messages,
         )  # get a new response from GPT where it can see the function response
         return second_response
 
 
+print('cccccccccccccccccccccc')
 print(run_conversation())

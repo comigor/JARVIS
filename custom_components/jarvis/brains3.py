@@ -6,6 +6,7 @@ from pydantic import BaseModel, field_validator
 instructor.patch()
 
 openai.api_base = 'http://127.0.0.1:8080/v1'
+model = 'thebloke__airoboros-m-7b-3.1.2-gguf__airoboros-m-7b-3.1.2.q5_k_m.gguf'
 
 class UserDetails(BaseModel):
     name: str
@@ -19,7 +20,7 @@ class UserDetails(BaseModel):
         return v
 
 model = openai.ChatCompletion.create(
-    model="open-llama-7B-open-instruct.ggmlv3.q4_0.bin",
+    model=model,
     response_model=UserDetails,
     max_retries=2,
     messages=[

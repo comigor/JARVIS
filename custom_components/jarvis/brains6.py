@@ -4,7 +4,7 @@ import json
 import os
 import requests
 
-llm_model = "open-llama-7B-open-instruct.ggmlv3.q4_0.bin"
+llm_model = "thebloke__open-llama-7b-open-instruct-ggml__open-llama-7b-open-instruct.ggmlv3.q4_0.bin"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.api_base = 'http://127.0.0.1:8080/v1'
 
@@ -13,7 +13,7 @@ def get_top_headlines(query: str = None, country: str = None, category: str = No
 
     base_url = "https://newsapi.org/v2/top-headlines"
     headers = {
-        "x-api-key": os.environ['NEWS_API_KEY']
+        "x-api-key": os.getenv('NEWS_API_KEY')
     }
     params = { "category": "general" }
     if query is not None:

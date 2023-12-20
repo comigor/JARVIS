@@ -10,6 +10,8 @@ from actionweaver import action
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.api_base = 'http://127.0.0.1:8080/v1'
+# model = 'thebloke__airoboros-m-7b-3.1.2-gguf__airoboros-m-7b-3.1.2.q5_k_m.gguf'
+model = 'thebloke__open-llama-7b-open-instruct-ggml__open-llama-7b-open-instruct.ggmlv3.q4_0.bin'
 
 logging.basicConfig(
     filename='agent.log',
@@ -50,7 +52,7 @@ def sleep(seconds: int) -> str:
     time.sleep(seconds)
     return f"Now I wake up after sleep {seconds} seconds."
 
-chat = OpenAIChatCompletion("open-llama-7B-open-instruct.ggmlv3.q4_0.bin", token_usage_tracker = TokenUsageTracker(budget=2000, logger=logger), logger=logger)
+chat = OpenAIChatCompletion(model, token_usage_tracker = TokenUsageTracker(budget=2000, logger=logger), logger=logger)
 
 def print_output(output):
     if type(output) == itertools._tee:
