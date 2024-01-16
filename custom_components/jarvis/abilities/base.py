@@ -1,19 +1,17 @@
 from abc import ABC, abstractmethod
-from kani import AIFunction, ChatMessage
 from typing import List
+from langchain.tools import BaseTool
+from langchain_core.messages import BaseMessage
 
 class BaseAbility(ABC):
-    def __init__(self, name: str):
-        self.name = name
-
     @abstractmethod
-    def sys_prompt(self) -> str:
+    def partial_sys_prompt(self) -> str:
         ...
 
     @abstractmethod
-    async def chat_history(self) -> List[ChatMessage]:
+    async def chat_history(self) -> List[BaseMessage]:
         ...
 
     @abstractmethod
-    def registered_functions(self) -> List[AIFunction]:
+    def registered_tools(self) -> List[BaseTool]:
         ...
