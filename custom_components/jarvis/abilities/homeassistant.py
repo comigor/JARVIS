@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 HOME_INFO_TEMPLATE = """
-Here is the current state of devices in the house. Use this to answer questions about the state of the smart home.
+Here is the current state of devices in the house:
 {%- for area in areas() %}
   {%- set area_info = namespace(printed=false) %}
   {%- for entity in (area_entities(area) | reject('is_hidden_entity')) -%}
@@ -76,7 +76,7 @@ class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
 
 
 class HomeAssistantEntityInput(BaseModel):
-    entity: str = Field(description="The entity to retrieve the current state, e.g. switch.office_switch_1, light.bedroom_light, or sensor.pixel_7_pro_battery_level")
+    entity: str = Field(description="The entity to retrieve the current state, e.g. switch.office_switch_1, light.bedroom_light, or sensor.pixel_7_pro_battery_level. Use only entities you know exist.")
 
 class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
     def __init__(self, **kwds):
@@ -99,6 +99,34 @@ class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
             ) as response:
                 response.raise_for_status()
                 json = await response.json()
+                _LOGGER.debug(json)
+                return json if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
+
+
+class HomeAssistantGetAllEntitiesStateSchema(BaseModel):
+    ...
+
+class HomeAssistantGetAllEntitiesStateTool(HomeAssistantBaseTool):
+    def __init__(self, **kwds):
+        super(HomeAssistantGetAllEntitiesStateTool, self).__init__(**kwds)
+
+    name = "home_assistant_get_all_entities_state"
+    description = """
+        Useful when you want to get an overview of all entities. States can also contain useful attributes about said entity.
+        """
+    args_schema: Type[BaseModel] = HomeAssistantGetAllEntitiesStateSchema
+
+    def _run(self):
+        raise NotImplementedError("home_assistant_get_all_entities_state does not support sync")
+
+    async def _arun(self):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f'{self.base_url}/api/states',
+                headers=self.headers,
+            ) as response:
+                response.raise_for_status()
+                json = list(filter(lambda s: s.get('entity_id').startswith(('light', 'switch', 'sensor')), await response.json()))
                 _LOGGER.debug(json)
                 return json if response.status == 200 else f"Sorry, I can't do that (got error {response.status})"
 
@@ -155,7 +183,7 @@ Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to re
 
 Answer the user's questions about the world truthfully. Be careful not to issue commands if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
 
-Usually the commands (like turning on or off a device) will require a list ofentities to operate.'''
+Usually the commands (like turning on or off a device) will require a list of entities to operate. Use only entities you know exist.'''
 
 
     async def chat_history(self) -> List[BaseMessage]:
@@ -172,8 +200,8 @@ Usually the commands (like turning on or off a device) will require a list ofent
                 _LOGGER.debug(plain_text)
                 if response.status == 200:
                     return [
-                        HumanMessage(content=plain_text),
-                        AIMessage(content='Got it! Ready to help.'),
+                        HumanMessage(content=plain_text, example=True),
+                        AIMessage(content='Got it! Ready to help.', example=True),
                     ]
                 else:
                     return []
@@ -184,4 +212,5 @@ Usually the commands (like turning on or off a device) will require a list ofent
             HomeAssistantControlEntitiesTool(api_key=self.api_key, base_url=self.base_url),
             HomeAssistantGetEntityTool(api_key=self.api_key, base_url=self.base_url),
             HomeAssistantTurnOnLightsTool(api_key=self.api_key, base_url=self.base_url),
+            HomeAssistantGetAllEntitiesStateTool(api_key=self.api_key, base_url=self.base_url),
         ]

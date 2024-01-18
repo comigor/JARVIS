@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+history.pickle
+history.db
+history_debug.db
+credentials.json
+client_secret.json
+service-account-key.json
+token.json

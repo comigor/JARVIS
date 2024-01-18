@@ -16,6 +16,7 @@ from typing import Literal
 from kani import Kani
 
 from . import brains
+from . import langbrain
 from .abilities.homeassistant import HomeAssistantAbility
 from .abilities.google import GoogleAbility
 
@@ -46,10 +47,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         abilities.extend([HomeAssistantAbility(api_key=homeassistant_key, base_url=homeassistant_url)]
                          if (homeassistant_key and homeassistant_url) else [])
-        abilities.extend([GoogleAbility(api_key=google_api_key, cx_key=google_cx_key)]
-                         if (google_api_key and google_cx_key) else [])
+        # abilities.extend([GoogleAbility(api_key=google_api_key, cx_key=google_cx_key)]
+        #                  if (google_api_key and google_cx_key) else [])
 
         ai = await brains.get_ai(openai_key=openai_key, abilities=abilities)
+        await langbrain.get_ai()
 
     except Exception as err:
         _LOGGER.error(f"Sorry, I had a problem: {err}\n{traceback.format_exc()}")
