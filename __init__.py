@@ -116,4 +116,5 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         self, user_input: conversation.ConversationInput
     ) -> conversation.ConversationResult:
         """Process a sentence."""
-        return asyncio.run(self.run_ai(self.ai, user_input))
+        task = asyncio.create_task(self.run_ai(self.ai, user_input))
+        return await task
