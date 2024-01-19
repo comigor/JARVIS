@@ -97,8 +97,8 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         try:
             _LOGGER.info('FULL ROUND:')
             ai_response = await self.ai.ainvoke({'input': user_input.text}, config={'configurable': {'session_id': conversation_id}})
-            _LOGGER.info(f'msg: {ai_response['output']}')
-            last_msg_text = ai_response['output']
+            _LOGGER.info(f"msg: {ai_response.get('output')}")
+            last_msg_text = ai_response.get('output')
         except Exception as err:
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(
