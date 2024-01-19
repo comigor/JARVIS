@@ -12,7 +12,7 @@ def authenticate_with_google():
     try:
         # The file token.json stores the user's access and refresh tokens, and it is
         # created automatically when the authorization flow completes for the first time.
-        token_path = 'token.json'
+        token_path = 'jarvis-config/token.json'
 
         # If there are no (valid) credentials available, let the user log in.
         creds = None
@@ -24,7 +24,7 @@ def authenticate_with_google():
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    'client_secret.json',
+                    'jarvis-config/client_secret.json',
                     GOOGLE_SCOPES,
                 )
                 creds = flow.run_local_server(port=8035)

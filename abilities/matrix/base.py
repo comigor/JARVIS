@@ -5,9 +5,9 @@ import re
 from fuzzywuzzy import fuzz
 import aiofiles
 
-json_fname = 'rooms.json'
-CONFIG_FILE = "credentials.json"  # login credentials JSON file
-STORE_PATH = "./store/"  # local directory
+json_fname = 'jarvis-config/rooms.json'
+CONFIG_FILE = 'jarvis-config/credentials.json'  # login credentials JSON file
+STORE_PATH = './jarvis-config/store/'  # local directory
 
 
 async def authenticate_with_matrix():
@@ -43,13 +43,14 @@ async def authenticate_with_matrix():
     except Exception:
         return None
 
-async def retrieve_and_cache_rooms(client):
-    await client.sync(60000)
+async def retrieve_and_cache_rooms(client: AsyncClient):
+    client.next_batch = None
+    client.loaded_sync_token = None
+    await client.sync(60000, full_state = True)
 
     rooms = client.rooms
     rooms_json = {}
     for room_id, room in rooms.items():
-
         names = [key for key in room.names.keys()]
 
         source = None
@@ -71,14 +72,14 @@ async def retrieve_and_cache_rooms(client):
             'id': room_id,
             'source': source,
             'names': names,
-            'display_name': re.sub(r'(.*?)( and \d+ others?)?', '\\1', room.display_name),
+            'display_name': re.sub(r'(.*?)( \(@.*| and \d+ others?)?', '\\1', room.display_name),
             'unread_highlights': room.unread_highlights,
             'unread_notifications': room.unread_notifications,
         }
-        if(names):
-            print(f"{names[0]} ({source})  [{len(names)}]")
-        else:
-            print(f"{room.display_name} ({source}) - No names found")
+        # if(names):
+        #     print(f"{names[0]} ({source})  [{len(names)}]")
+        # else:
+        #     print(f"{room.display_name} ({source}) - No names found")
 
     print(f"\nFound {len(rooms_json)} rooms! Writing to {json_fname}")
     with open(json_fname, 'w') as f:

@@ -1,5 +1,6 @@
-import os
-import asyncio
+import os, asyncio, sys, locale
+from pathlib import Path
+from configparser import ConfigParser
 
 from langchain.agents import AgentExecutor, OpenAIFunctionsAgent
 from langchain_openai import ChatOpenAI
@@ -20,8 +21,8 @@ from abilities.matrix.send_message import MatrixSendMessageAbility
 
 from abilities.base import BaseAbility
 
-async def get_ai(abilities: [BaseAbility]) -> AgentExecutor:
-    llm = ChatOpenAI(model='gpt-3.5-turbo-1106', temperature=0.2)
+async def get_ai(openai_api_key: str, abilities: [BaseAbility]) -> AgentExecutor:
+    llm = ChatOpenAI(model='gpt-3.5-turbo-1106', temperature=0.2, api_key=openai_api_key)
 
     chat_history_examples = []
     system_prompt = ''
@@ -63,21 +64,41 @@ async def get_ai(abilities: [BaseAbility]) -> AgentExecutor:
         history_messages_key='chat_history',
     )
 
+def load_config() -> ConfigParser:
+    path = Path(os.path.realpath('jarvis-config/jarvis.conf'))
+    if not path.is_file():
+        path = Path(os.path.realpath('../jarvis-config/jarvis.conf'))
+        if not path.is_file():
+            raise Exception("No config file found! You must have a jarvis.json on custom_components or custom_components/jarvis directory with secrets. Home Assistant config_flow is too hard to test and use, sorry not sorry.")
+
+    cp = ConfigParser()
+    cp.read_file(open(str(path)))
+    return cp
+
+async def get_ai_with_abilities():
+    cp = load_config()
+    return await get_ai(
+        openai_api_key=cp.get('jarvis', 'OPENAI_API_KEY'),
+        abilities=[
+            HomeAssistantAbility(api_key=cp.get('jarvis', 'HOMEASSISTANT_KEY'), base_url=cp.get('jarvis', 'HOMEASSISTANT_URL')),
+            GoogleCalendarAbility(),
+            GoogleSearchAbility(google_api_key=cp.get('jarvis', 'GOOGLE_API_KEY'), google_cse_id=cp.get('jarvis', 'GOOGLE_CSE_ID')),
+            GoogleTasksAbility(),
+            MovieSearchAbility(api_key=cp.get('jarvis', 'TMDB_API_KEY')),
+            WikipediaAbility(),
+            MatrixSendMessageAbility(),
+        ],
+    )
+
+
 async def main_development():
-    agent = await get_ai(abilities=[
-        HomeAssistantAbility(api_key=os.getenv('HOMEASSISTANT_KEY'), base_url=os.getenv('HOMEASSISTANT_URL')),
-        GoogleCalendarAbility(),
-        GoogleSearchAbility(google_api_key=os.getenv('GOOGLE_API_KEY'), google_cse_id=os.getenv('GOOGLE_CSE_ID')),
-        GoogleTasksAbility(),
-        MovieSearchAbility(api_key=os.getenv('TMDB_API_KEY')),
-        WikipediaAbility(),
-        MatrixSendMessageAbility(),
-    ])
+    agent = await get_ai_with_abilities()
 
     while True:
         print('\n>>> ', end='')
         str_input = input()
-        print(await agent.ainvoke({'input': str_input}, config={'configurable': {'session_id': 'history_debug.db'}}))
+        response = await agent.ainvoke({'input': str_input}, config={'configurable': {'session_id': 'jarvis-config/history_debug.db'}})
+        print(response['output'])
 
     # await agent.ainvoke({'input': 'toggle the office lights'}, config={'configurable': {'session_id': 'history_debug.db'}})
     # await agent.ainvoke({'input': 'list my google calendar events today'}, config={'configurable': {'session_id': 'history_debug.db'}})

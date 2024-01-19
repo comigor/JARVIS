@@ -48,6 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         #                  if (google_api_key and google_cx_key) else [])
 
         _LOGGER.warn('DEBUG')
+        from pathlib import Path
         _LOGGER.warn(os.path.dirname(os.path.realpath(__file__)))
         _LOGGER.warn(os.getcwd())
 

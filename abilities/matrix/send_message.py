@@ -22,6 +22,8 @@ class SendMessageMatrixTool(BaseTool):
             rooms = await retrieve_and_cache_rooms(client)
             room = find_room_id_by_name(rooms, room_name)
 
+            print(f"Sending message to Matrix room {room['id']}.")
+
             # Join the room (if not already joined)
             await client.room_invite(room['id'], client.user_id)
             await client.join(room['id'])
@@ -30,7 +32,7 @@ class SendMessageMatrixTool(BaseTool):
             await client.room_send(
                 room['id'],
                 message_type="m.room.message",
-                content={"msgtype": "m.text", "body": message},
+                content={"msgtype": "m.text", "body": f".{message}"},
             )
 
             return f"Message sent to Matrix room {room['id']}.", None
