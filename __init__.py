@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 import logging
 import traceback
+import asyncio
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
@@ -114,4 +115,4 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         self, user_input: conversation.ConversationInput
     ) -> conversation.ConversationResult:
         """Process a sentence."""
-        return await self.hass.async_create_task(self.run_ai(self.ai, user_input))
+        return asyncio.run(self.run_ai(self.ai, user_input))
