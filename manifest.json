@@ -3,7 +3,7 @@
   "name": "J.A.R.V.I.S.",
   "codeowners": ["@comigor"],
   "config_flow": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": ["conversation"],
   "documentation": "",
   "integration_type": "service",

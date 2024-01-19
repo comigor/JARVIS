@@ -2,7 +2,7 @@
   "name": "JARVIS",
   "render_readme": true,
   "iot_class": "cloud_push",
-  "content_in_root": false,
+  "content_in_root": true,
   "domains": ["jarvis"],
   "zip_release": false
 }
