@@ -92,7 +92,7 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         last_msg_text = None
         try:
             _LOGGER.info('FULL ROUND:')
-            ai_response = await self.ai.ainvoke({'input': user_input.text}, config={'configurable': {'session_id': conversation_id}})
+            ai_response = await self.hass.async_add_executor_job(self.ai.ainvoke({'input': user_input.text}, config={'configurable': {'session_id': conversation_id}}))
             _LOGGER.info(f"msg: {ai_response.get('output')}")
             last_msg_text = ai_response.get('output')
         except Exception as err:
