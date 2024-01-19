@@ -95,7 +95,7 @@ class JARVISAgent(conversation.AbstractConversationAgent):
             async def _a():
                 return await self.ai.ainvoke({'input': user_input.text}, config={'configurable': {'session_id': conversation_id}})
 
-            ai_response = await (await self.hass.async_add_executor_job(_a))
+            ai_response = await (await self.hass.async_create_task(_a()))
             _LOGGER.info(f"msg: {ai_response.get('output')}")
             last_msg_text = ai_response.get('output')
         except Exception as err:
