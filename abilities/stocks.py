@@ -15,23 +15,15 @@ from typing import (
 )
 _T = TypeVar("_T")
 
-def async_func_wrapper(target, *args: Any):
-    loop = asyncio.new_event_loop()
-    results = loop.run_until_complete(target(*args))
-    loop.close()
-    return results
-
 def async_add_executor_job(
-    # loop: asyncio.AbstractEventLoop,
+    loop: asyncio.AbstractEventLoop,
     target: Callable[..., _T],
     *args: Any,
 ) -> asyncio.Future[_T]:
     """Add an executor job from within the event loop."""
-    # task = loop.run_in_executor(None, target, *args)
-    task = asyncio.get_running_loop().run_in_executor(None, async_func_wrapper, target, *args)
-    return task
+    return loop.run_in_executor(None, target, *args)
 
-async def get_current_stock_price(ticker):
+def get_current_stock_price(ticker):
     """Method to get current stock price"""
 
     ticker_data = yf.Ticker(ticker)
@@ -39,7 +31,7 @@ async def get_current_stock_price(ticker):
     return {"price": recent.iloc[0]["Close"], "currency": "USD"}
 
 
-async def get_stock_performance(ticker, days):
+def get_stock_performance(ticker, days):
     """Method to get stock price change in percentage"""
 
     past_date = datetime.today() - timedelta(days=days)
@@ -66,7 +58,8 @@ class CurrentStockPriceTool(BaseTool):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, ticker: str):
-        return await async_add_executor_job(get_current_stock_price, ticker)
+        loop = asyncio.get_running_loop()
+        return await async_add_executor_job(loop, get_current_stock_price, ticker)
 
 
 class StockPercentChangeInput(BaseModel):
@@ -88,4 +81,5 @@ class StockPerformanceTool(BaseTool):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, ticker: str, days: int):
-        return await async_add_executor_job(get_stock_performance, ticker, days)
+        loop = asyncio.get_running_loop()
+        return await async_add_executor_job(loop, get_stock_performance, ticker, days)
