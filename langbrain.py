@@ -1,4 +1,4 @@
-import os, asyncio, sys, locale
+import os, asyncio, logging
 from pathlib import Path
 from configparser import ConfigParser
 
@@ -20,6 +20,8 @@ from abilities.wikipedia import WikipediaAbility
 from abilities.matrix.send_message import MatrixSendMessageAbility
 
 from abilities.base import BaseAbility
+
+_LOGGER = logging.getLogger(__name__)
 
 async def get_ai(openai_api_key: str, abilities: [BaseAbility]) -> AgentExecutor:
     llm = ChatOpenAI(model='gpt-3.5-turbo-1106', temperature=0.2, api_key=openai_api_key)
@@ -66,8 +68,10 @@ async def get_ai(openai_api_key: str, abilities: [BaseAbility]) -> AgentExecutor
 
 def load_config() -> ConfigParser:
     path = Path(os.path.realpath('jarvis-config/jarvis.conf'))
+    _LOGGER.info(path)
     if not path.is_file():
         path = Path(os.path.realpath('../jarvis-config/jarvis.conf'))
+        _LOGGER.info(path)
         if not path.is_file():
             raise Exception("No config file found! You must have a jarvis.json on custom_components or custom_components/jarvis directory with secrets. Home Assistant config_flow is too hard to test and use, sorry not sorry.")
 
