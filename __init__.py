@@ -47,12 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # abilities.extend([GoogleAbility(api_key=google_api_key, cx_key=google_cx_key)]
         #                  if (google_api_key and google_cx_key) else [])
 
-        _LOGGER.warn('DEBUG')
-        from pathlib import Path
-        _LOGGER.warn(os.path.dirname(os.path.realpath(__file__)))
-        _LOGGER.warn(os.getcwd())
-
-        ai = await langbrain.get_ai(abilities)
+        ai = await langbrain.get_ai_with_abilities()
 
     except Exception as err:
         _LOGGER.error(f"Sorry, I had a problem: {err}\n{traceback.format_exc()}")
