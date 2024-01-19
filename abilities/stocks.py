@@ -66,7 +66,6 @@ class CurrentStockPriceTool(BaseTool):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, ticker: str):
-        loop = asyncio.get_running_loop()
         return await async_add_executor_job(get_current_stock_price, ticker)
 
 
@@ -89,6 +88,4 @@ class StockPerformanceTool(BaseTool):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, ticker: str, days: int):
-        loop = asyncio.get_running_loop()
-        tasks = set()
-        return await async_add_executor_job(loop, tasks, get_stock_performance, ticker, days)
+        return await async_add_executor_job(get_stock_performance, ticker, days)
