@@ -79,10 +79,8 @@ class JARVISAgent(conversation.AbstractConversationAgent):
     def supported_languages(self) -> list[str] | Literal["*"]:
         """Return a list of supported languages."""
         return MATCH_ALL
-
-    async def async_process(
-        self, user_input: conversation.ConversationInput
-    ) -> conversation.ConversationResult:
+    
+    async def run_ai(ai: AgentExecutor, user_input: conversation.ConversationInput):
         """Process a sentence."""
         conversation_id = user_input.conversation_id or ulid.ulid()
 
@@ -92,7 +90,8 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         last_msg_text = None
         try:
             _LOGGER.info('FULL ROUND:')
-            ai_response = await self.ai.ainvoke({'input': user_input.text}, config={'configurable': {'session_id': conversation_id}})
+            ai_response = await ai.ainvoke({'input': user_input.text}, config={'configurable': {'session_id': conversation_id}})
+
             _LOGGER.info(f"msg: {ai_response.get('output')}")
             last_msg_text = ai_response.get('output')
         except Exception as err:
@@ -110,3 +109,9 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
         )
+
+    async def async_process(
+        self, user_input: conversation.ConversationInput
+    ) -> conversation.ConversationResult:
+        """Process a sentence."""
+        return await self.hass.async_create_task(self.run_ai(self.ai, user_input))
