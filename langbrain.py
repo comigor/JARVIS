@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from langchain.agents import AgentExecutor, OpenAIFunctionsAgent
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts.chat import MessagesPlaceholder, SystemMessagePromptTemplate, PromptTemplate, HumanMessagePromptTemplate
-from langchain.memory.chat_message_histories import FileChatMessageHistory
+from langchain.memory.chat_message_histories import FileChatMessageHistory, ChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -61,7 +61,7 @@ async def get_ai(openai_api_key: str, abilities: [BaseAbility]) -> AgentExecutor
 
     return RunnableWithMessageHistory(
         agent_executor,
-        FileChatMessageHistory,
+        lambda session_id: ChatMessageHistory(), # FileChatMessageHistory,
         input_messages_key='input',
         history_messages_key='chat_history',
     )
