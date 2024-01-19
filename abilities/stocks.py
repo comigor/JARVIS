@@ -1,4 +1,3 @@
-import asyncio
 import yfinance as yf
 
 from datetime import datetime, timedelta
@@ -6,22 +5,7 @@ from typing import Type
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from collections.abc import (
-    Callable,
-)
-from typing import (
-    Any,
-    TypeVar,
-)
-_T = TypeVar("_T")
-
-def async_add_executor_job(
-    loop: asyncio.AbstractEventLoop,
-    target: Callable[..., _T],
-    *args: Any,
-) -> asyncio.Future[_T]:
-    """Add an executor job from within the event loop."""
-    return loop.run_in_executor(None, target, *args)
+from .fuckio import async_add_executor_job
 
 def get_current_stock_price(ticker):
     """Method to get current stock price"""
@@ -58,8 +42,7 @@ class CurrentStockPriceTool(BaseTool):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, ticker: str):
-        loop = asyncio.get_running_loop()
-        return await async_add_executor_job(loop, get_current_stock_price, ticker)
+        return await async_add_executor_job(get_current_stock_price, ticker)
 
 
 class StockPercentChangeInput(BaseModel):
@@ -81,5 +64,4 @@ class StockPerformanceTool(BaseTool):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, ticker: str, days: int):
-        loop = asyncio.get_running_loop()
-        return await async_add_executor_job(loop, get_stock_performance, ticker, days)
+        return await async_add_executor_job(get_stock_performance, ticker, days)
