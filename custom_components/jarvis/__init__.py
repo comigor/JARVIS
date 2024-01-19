@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, intent
 from homeassistant.util import ulid
 from typing import Literal
-from kani import Kani
+# from kani import Kani
 
 from . import brains
 from . import langbrain
@@ -73,7 +73,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class JARVISAgent(conversation.AbstractConversationAgent):
     """JARVIS conversation agent."""
 
-    def __init__(self, hass: HomeAssistant, ai: Kani, entry: ConfigEntry) -> None:
+    def __init__(self, hass: HomeAssistant, ai, entry: ConfigEntry) -> None:
         """Initialize the agent."""
         self.hass = hass
         self.ai = ai

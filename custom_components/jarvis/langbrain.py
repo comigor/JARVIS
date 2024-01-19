@@ -2,7 +2,7 @@ import os
 import asyncio
 
 from langchain.agents import AgentExecutor, OpenAIFunctionsAgent
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_core.prompts.chat import MessagesPlaceholder, SystemMessagePromptTemplate, PromptTemplate, HumanMessagePromptTemplate
 from langchain.memory.chat_message_histories import FileChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
@@ -16,6 +16,7 @@ from abilities.google.google_search import GoogleSearchAbility
 from abilities.google.google_tasks import GoogleTasksAbility
 from abilities.tmdb import MovieSearchAbility
 from abilities.wikipedia import WikipediaAbility
+from abilities.matrix.send_message import MatrixSendMessageAbility
 
 from abilities.base import BaseAbility
 
@@ -70,6 +71,7 @@ async def main_development():
         GoogleTasksAbility(),
         MovieSearchAbility(api_key=os.getenv('TMDB_API_KEY')),
         WikipediaAbility(),
+        MatrixSendMessageAbility(),
     ])
 
     while True:

@@ -46,7 +46,7 @@ class HomeAssistantBaseTool(BaseTool):
 
 class HomeAssistantControlEntitiesInput(BaseModel):
     command: str = Field(description="The command to execute on entities, e.g. turn_on, turn_off, toggle")
-    entities: List[str] = Field(description="One or more entities (e.g. lights or switches), e.g. switch.office_switch_1, light.bedroom_light")
+    entities: List[str] = Field(description="One or more entities (e.g. lights or switches) to control, e.g. switch.office_switch_1, light.bedroom_light")
 
 class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
     def __init__(self, **kwds):
@@ -59,7 +59,7 @@ class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
     args_schema: Type[BaseModel] = HomeAssistantControlEntitiesInput
 
     def _run(self, command: str, entities: List[str]):
-        raise NotImplementedError("home_assistant_control_entities does not support sync")
+        raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, command: str, entities: List[str]):
         async with aiohttp.ClientSession() as session:
@@ -89,7 +89,7 @@ class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
     args_schema: Type[BaseModel] = HomeAssistantEntityInput
 
     def _run(self, entity: str):
-        raise NotImplementedError("home_assistant_get_entity_state does not support sync")
+        raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, entity: str):
         async with aiohttp.ClientSession() as session:
@@ -117,7 +117,7 @@ class HomeAssistantGetAllEntitiesStateTool(HomeAssistantBaseTool):
     args_schema: Type[BaseModel] = HomeAssistantGetAllEntitiesStateSchema
 
     def _run(self):
-        raise NotImplementedError("home_assistant_get_all_entities_state does not support sync")
+        raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self):
         async with aiohttp.ClientSession() as session:
@@ -148,7 +148,7 @@ class HomeAssistantTurnOnLightsTool(HomeAssistantBaseTool):
     args_schema: Type[BaseModel] = HomeAssistantTurnOnLightsInput
 
     def _run(self, entities: List[str] = [], transition: float = None, rgbw_color: List[int] = None, brightness_pct: int = None):
-        raise NotImplementedError("home_assistant_turn_on_lights does not support sync")
+        raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, entities: List[str] = [], transition: float = None, rgbw_color: List[int] = None, brightness_pct: int = None):
         async with aiohttp.ClientSession() as session:
@@ -183,7 +183,7 @@ Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to re
 
 Answer the user's questions about the world truthfully. Be careful not to issue commands if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
 
-Usually the commands (like turning on or off a device) will require a list of entities to operate. Use only entities you know exist.'''
+Usually the commands (like turning on or off a device) will require a list of entities to operate. Use only entities that exist (use home_assistant_get_all_entities_state to retrieve all entities when needed).'''
 
 
     async def chat_history(self) -> List[BaseMessage]:

@@ -109,8 +109,8 @@ class CreateGoogleCalendarEventTool(BaseTool):
 class GoogleCalendarAbility(BaseAbility):
     def partial_sys_prompt(self) -> str:
         return f'''Right now is {datetime.now().astimezone().isoformat()}.
-
-Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.'''
+Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.
+Weeks start on sunday and end on saturday. Please consider local holidays and treat them as non-work days.'''
 
     async def chat_history(self) -> List[BaseMessage]:
         return []

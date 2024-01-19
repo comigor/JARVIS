@@ -128,10 +128,15 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# llm history
 history.pickle
 history.db
 history_debug.db
+
+# matrix
 credentials.json
 client_secret.json
 service-account-key.json
 token.json
+store
+rooms.json
