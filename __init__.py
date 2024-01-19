@@ -13,12 +13,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, intent
 from homeassistant.util import ulid
 from typing import Literal
-# from kani import Kani
+from langchain.agents import AgentExecutor
 
-from . import brains
 from . import langbrain
 from .abilities.homeassistant import HomeAssistantAbility
-from .abilities.google import GoogleAbility
 
 from .const import (
     CONF_OPENAI_KEY_KEY,
@@ -32,7 +30,6 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
@@ -50,8 +47,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # abilities.extend([GoogleAbility(api_key=google_api_key, cx_key=google_cx_key)]
         #                  if (google_api_key and google_cx_key) else [])
 
-        ai = await brains.get_ai(openai_key=openai_key, abilities=abilities)
-        await langbrain.get_ai()
+        _LOGGER.warn('DEBUG')
+        _LOGGER.warn(os.path.dirname(os.path.realpath(__file__)))
+        _LOGGER.warn(os.getcwd())
+
+        ai = await langbrain.get_ai(abilities)
 
     except Exception as err:
         _LOGGER.error(f"Sorry, I had a problem: {err}\n{traceback.format_exc()}")
@@ -73,7 +73,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class JARVISAgent(conversation.AbstractConversationAgent):
     """JARVIS conversation agent."""
 
-    def __init__(self, hass: HomeAssistant, ai, entry: ConfigEntry) -> None:
+    def __init__(self, hass: HomeAssistant, ai: AgentExecutor, entry: ConfigEntry) -> None:
         """Initialize the agent."""
         self.hass = hass
         self.ai = ai
@@ -96,9 +96,9 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         last_msg_text = None
         try:
             _LOGGER.info('FULL ROUND:')
-            async for msg in self.ai.full_round(user_input.text):
-                _LOGGER.info(f'msg: {msg}')
-                last_msg_text = msg.text
+            ai_response = await self.ai.ainvoke({'input': user_input.text}, config={'configurable': {'session_id': conversation_id}})
+            _LOGGER.info(f'msg: {ai_response['output']}')
+            last_msg_text = ai_response['output']
         except Exception as err:
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(

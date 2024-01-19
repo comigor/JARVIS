@@ -54,7 +54,7 @@ async def get_ai(abilities: [BaseAbility]) -> AgentExecutor:
         chat_history=chat_history_examples,
     )
     agent = OpenAIFunctionsAgent(llm=llm, tools=all_tools, prompt=prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=all_tools, verbose=True)
+    agent_executor = AgentExecutor(agent=agent, tools=all_tools) #, verbose=True)
 
     return RunnableWithMessageHistory(
         agent_executor,
@@ -77,7 +77,7 @@ async def main_development():
     while True:
         print('\n>>> ', end='')
         str_input = input()
-        await agent.ainvoke({'input': str_input}, config={'configurable': {'session_id': 'history_debug.db'}})
+        print(await agent.ainvoke({'input': str_input}, config={'configurable': {'session_id': 'history_debug.db'}}))
 
     # await agent.ainvoke({'input': 'toggle the office lights'}, config={'configurable': {'session_id': 'history_debug.db'}})
     # await agent.ainvoke({'input': 'list my google calendar events today'}, config={'configurable': {'session_id': 'history_debug.db'}})

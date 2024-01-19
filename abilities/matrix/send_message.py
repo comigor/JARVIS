@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 from langchain_core.messages import BaseMessage
 
-from .base import user_id, authenticate_with_matrix, retrieve_and_cache_rooms, find_room_id_by_name
+from .base import authenticate_with_matrix, retrieve_and_cache_rooms, find_room_id_by_name
 from ..base import BaseAbility
 
 class SendMessageMatrixSchema(BaseModel):
@@ -23,7 +23,7 @@ class SendMessageMatrixTool(BaseTool):
             room = find_room_id_by_name(rooms, room_name)
 
             # Join the room (if not already joined)
-            await client.room_invite(room['id'], user_id)
+            await client.room_invite(room['id'], client.user_id)
             await client.join(room['id'])
 
             # Send the message
