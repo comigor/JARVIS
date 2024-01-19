@@ -15,7 +15,8 @@ def async_add_executor_job(
 ) -> asyncio.Future[_T]:
     """Add an executor job from within the event loop."""
     loop = asyncio.get_running_loop()
-    return loop.run_in_executor(None, target, *args)
+    # with concurrent.futures.ProcessPoolExecutor() as pool:
+    return loop.run_in_executor(None, async_func_wrapper, *[target, *args])
 
 # async def _arun(self, 
 #     loop = asyncio.get_running_loop()

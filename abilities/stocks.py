@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from .fuckio import async_add_executor_job
 
-def get_current_stock_price(ticker):
+async def get_current_stock_price(ticker):
     """Method to get current stock price"""
 
     ticker_data = yf.Ticker(ticker)
@@ -15,7 +15,7 @@ def get_current_stock_price(ticker):
     return {"price": recent.iloc[0]["Close"], "currency": "USD"}
 
 
-def get_stock_performance(ticker, days):
+async def get_stock_performance(ticker, days):
     """Method to get stock price change in percentage"""
 
     past_date = datetime.today() - timedelta(days=days)
