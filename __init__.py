@@ -81,8 +81,9 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         """Return a list of supported languages."""
         return MATCH_ALL
     
-    async def run_ai(ai: AgentExecutor, user_input: conversation.ConversationInput):
+    async def run_ai(what, ai: AgentExecutor, user_input: conversation.ConversationInput):
         """Process a sentence."""
+        _LOGGER.info(what)
         conversation_id = user_input.conversation_id or ulid.ulid()
 
         _LOGGER.info('STARTING CONVERSATION')
