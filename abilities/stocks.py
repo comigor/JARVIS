@@ -1,8 +1,32 @@
-from datetime import datetime, timedelta
+import asyncio
 import yfinance as yf
+
+from datetime import datetime, timedelta
 from typing import Type
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
+
+from collections.abc import (
+    Callable,
+)
+from typing import (
+    Any,
+    TypeVar,
+)
+_T = TypeVar("_T")
+
+def async_add_executor_job(
+    loop: asyncio.AbstractEventLoop,
+    tasks: set[asyncio.Future[Any]],
+    target: Callable[..., _T],
+    *args: Any,
+) -> asyncio.Future[_T]:
+    """Add an executor job from within the event loop."""
+    task = loop.run_in_executor(None, target, *args)
+    tasks.add(task)
+    task.add_done_callback(tasks.remove)
+
+    return task
 
 def get_current_stock_price(ticker):
     """Method to get current stock price"""
@@ -23,7 +47,6 @@ def get_stock_performance(ticker, days):
     return {"percent_change": ((current_price - old_price) / old_price) * 100}
 
 
-
 class CurrentStockPriceInput(BaseModel):
     ticker: str = Field(description="Ticker symbol of the stock")
 
@@ -37,10 +60,12 @@ class CurrentStockPriceTool(BaseTool):
     args_schema: Type[BaseModel] = CurrentStockPriceInput
 
     def _run(self, ticker: str):
-        return get_current_stock_price(ticker)
+        raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, ticker: str):
-        return get_current_stock_price(ticker)
+        loop = asyncio.get_running_loop()
+        tasks = set()
+        return await async_add_executor_job(loop, tasks, get_current_stock_price, ticker)
 
 
 class StockPercentChangeInput(BaseModel):
@@ -59,7 +84,9 @@ class StockPerformanceTool(BaseTool):
     args_schema: Type[BaseModel] = StockPercentChangeInput
 
     def _run(self, ticker: str, days: int):
-        return get_stock_performance(ticker, days)
+        raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, ticker: str, days: int):
-        return get_stock_performance(ticker, days)
+        loop = asyncio.get_running_loop()
+        tasks = set()
+        return await async_add_executor_job(loop, tasks, get_stock_performance, ticker, days)
