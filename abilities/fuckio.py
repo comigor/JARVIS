@@ -5,7 +5,7 @@ _T = TypeVar("_T")
 import concurrent.futures
 
 def async_func_wrapper(target, *args: Any):
-    loop = asyncio.new_event_loop()
+    loop = asyncio.get_running_loop()
     results = loop.run_until_complete(target(*args))
     loop.close()
     return results
@@ -15,9 +15,9 @@ def async_add_executor_job(
     *args: Any,
 ) -> asyncio.Future[_T]:
     """Add an executor job from within the event loop."""
-    loop = asyncio.new_event_loop()
-    with concurrent.futures.ProcessPoolExecutor() as pool:
-        return loop.run_in_executor(pool, async_func_wrapper, *[target, *args])
+    loop = asyncio.get_running_loop()
+    # with concurrent.futures.ProcessPoolExecutor() as pool:
+    return loop.run_in_executor(None, async_func_wrapper, *[target, *args])
 
 # async def _arun(self, 
 #     loop = asyncio.get_running_loop()
