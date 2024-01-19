@@ -67,13 +67,13 @@ async def get_ai(openai_api_key: str, abilities: [BaseAbility]) -> AgentExecutor
     )
 
 def load_config() -> ConfigParser:
-    path = Path(os.path.realpath('jarvis-config/jarvis.conf'))
+    path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.joinpath('jarvis-config/jarvis.conf')
     _LOGGER.info(path)
     if not path.is_file():
-        path = Path(os.path.realpath('../jarvis-config/jarvis.conf'))
+        path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.parent.joinpath('jarvis-config/jarvis.conf')
         _LOGGER.info(path)
         if not path.is_file():
-            raise Exception("No config file found! You must have a jarvis.json on custom_components or custom_components/jarvis directory with secrets. Home Assistant config_flow is too hard to test and use, sorry not sorry.")
+            raise Exception("No config file found! You must have a jarvis-config folder on custom_components or custom_components/jarvis directory with secrets. Home Assistant config_flow is too hard to test and use, sorry not sorry.")
 
     cp = ConfigParser()
     cp.read_file(open(str(path)))
