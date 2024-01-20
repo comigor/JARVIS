@@ -115,7 +115,7 @@ class CreateGoogleTaskTool(BaseTool):
 
 class GoogleTasksAbility(BaseAbility):
     def partial_sys_prompt(self) -> str:
-        return "I can help you manage your Google Tasks. You can list tasks for a specific time range or create new tasks. If no date is specified, create a TODO for today."
+        return "Help user list, create and be reminded of their things to do. They can use the words TODO, to-do, task, tarefa, lembrete, along others for this."
 
     async def chat_history(self) -> List[BaseMessage]:
         return []

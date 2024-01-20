@@ -60,7 +60,7 @@ class MovieSearchAbility(BaseAbility):
         self.api_key = api_key
 
     def partial_sys_prompt(self) -> str:
-        return "I can help you find information about movies, including where to watch them."
+        return ""
 
     async def chat_history(self) -> List[BaseMessage]:
         return []

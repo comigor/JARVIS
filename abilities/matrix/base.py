@@ -1,25 +1,13 @@
 import asyncio, logging, json, re, aiofiles
 from nio import AsyncClient, AsyncClientConfig
 from fuzzywuzzy import fuzz
-from pathlib import Path
 
-from const import ROOT_DIR
+from ..base import get_full_file_path
 
 json_fname = 'jarvis-config/rooms.json'
 CONFIG_FILE = 'jarvis-config/credentials.json'  # login credentials JSON file
 STORE_PATH = 'jarvis-config/store/'  # local directory
 _LOGGER = logging.getLogger(__name__)
-
-
-def get_full_file_path(relative_path: str) -> str:
-    path = Path(ROOT_DIR).joinpath(relative_path)
-    if not path.is_file() and not path.is_dir():
-        path2 = Path(ROOT_DIR).parent.joinpath(relative_path)
-        if not path2.is_file() and not path2.is_dir():
-            raise Exception(f'Could not find file: {relative_path}. Tried {path} & {path2}')
-        return str(path2)
-    return str(path)
-
 
 async def authenticate_with_matrix():
     client_config = AsyncClientConfig(
@@ -52,13 +40,14 @@ async def authenticate_with_matrix():
     return client
 
 async def retrieve_and_cache_rooms(client: AsyncClient):
+    rooms_json = {}
+
     # Hacky way to _really_ sync fully
     client.next_batch = None
     client.loaded_sync_token = None
     await client.sync(60000, full_state = True)
 
     rooms = client.rooms
-    rooms_json = {}
     for room_id, room in rooms.items():
         names = [key for key in room.names.keys()]
 
@@ -90,14 +79,14 @@ async def retrieve_and_cache_rooms(client: AsyncClient):
 
     return rooms_json
 
-def assoc_ratio(room, room_name):
+def assoc_ratio(room, room_name: str):
     return {
         **room,
         'ratio': fuzz.ratio(room_name.lower(), room['display_name'].lower()),
     }
 
-def find_room_id_by_name(rooms, room_name: str):
-    filtered_rooms = list(map(lambda r: assoc_ratio(r, room_name), rooms.values()))
+def find_room_id_by_name(rooms_json, room_name: str):
+    filtered_rooms = list(filter(lambda r: r['ratio'] >= 70, map(lambda r: assoc_ratio(r, room_name), rooms_json.values())))
     sorted_rooms = sorted(filtered_rooms, key=lambda r: r['ratio'])
     return sorted_rooms[-1]
 

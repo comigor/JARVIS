@@ -1,11 +1,10 @@
-import os, asyncio, logging
-from pathlib import Path
+import asyncio, logging
 from configparser import ConfigParser
 
 from langchain.agents import AgentExecutor, OpenAIFunctionsAgent
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts.chat import MessagesPlaceholder, SystemMessagePromptTemplate, PromptTemplate, HumanMessagePromptTemplate
-from langchain.memory.chat_message_histories import FileChatMessageHistory, ChatMessageHistory
+from langchain.memory.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -19,8 +18,7 @@ from abilities.tmdb import MovieSearchAbility
 from abilities.wikipedia import WikipediaAbility
 from abilities.matrix.send_message import MatrixSendMessageAbility
 
-from abilities.base import BaseAbility
-import const
+from abilities.base import BaseAbility, get_full_file_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,16 +66,9 @@ async def get_ai(openai_api_key: str, abilities: [BaseAbility]) -> AgentExecutor
     )
 
 def load_config() -> ConfigParser:
-    path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.joinpath('jarvis-config/jarvis.conf')
-    _LOGGER.info(path)
-    if not path.is_file():
-        path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.parent.joinpath('jarvis-config/jarvis.conf')
-        _LOGGER.info(path)
-        if not path.is_file():
-            raise Exception("No config file found! You must have a jarvis-config folder on custom_components or custom_components/jarvis directory with secrets. Home Assistant config_flow is too hard to test and use, sorry not sorry.")
-
     cp = ConfigParser()
-    cp.read_file(open(str(path)))
+    with open(get_full_file_path('jarvis-config/jarvis.conf'), 'r') as f:
+        cp.read_file(f)
     return cp
 
 async def get_ai_with_abilities():

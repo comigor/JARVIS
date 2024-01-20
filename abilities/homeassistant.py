@@ -5,28 +5,11 @@ import logging
 from typing import List, Type
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
-from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
+from langchain_core.messages import BaseMessage
 
 from .base import BaseAbility
 
 _LOGGER = logging.getLogger(__name__)
-
-
-HOME_INFO_TEMPLATE = """
-Here is the current state of devices in the house:
-{%- for area in areas() %}
-  {%- set area_info = namespace(printed=false) %}
-  {%- for entity in (area_entities(area) | reject('is_hidden_entity')) -%}
-      {%- if not area_info.printed %}
-{{ area_name(area) }}:
-        {%- set area_info.printed = true %}
-      {%- endif %}
-{%- if entity.startswith("light") or entity.startswith("switch") or 'sensor' in entity %}
-- {{entity}} is {{states(entity)}}
-{%- endif %}
-  {%- endfor %}
-{%- endfor %}
-"""
 
 
 class HomeAssistantBaseTool(BaseTool):
@@ -46,7 +29,7 @@ class HomeAssistantBaseTool(BaseTool):
 
 class HomeAssistantControlEntitiesInput(BaseModel):
     command: str = Field(description="The command to execute on entities, e.g. turn_on, turn_off, toggle")
-    entities: List[str] = Field(description="One or more entities (e.g. lights or switches) to control, e.g. switch.office_switch_1, light.bedroom_light")
+    entities: List[str] = Field(description="The entity IDs of devices (e.g. lights or switches) to control, e.g. switch.office_switch_1, light.bedroom_light")
 
 class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
     def __init__(self, **kwds):
@@ -76,7 +59,7 @@ class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
 
 
 class HomeAssistantEntityInput(BaseModel):
-    entity: str = Field(description="The entity to retrieve the current state, e.g. switch.office_switch_1, light.bedroom_light, or sensor.pixel_7_pro_battery_level. Use only entities you know exist.")
+    entity: str = Field(description="The entity ID to retrieve the current state, e.g. switch.office_switch_1, light.bedroom_light, or sensor.pixel_7_pro_battery_level. Use only entities you know exist.")
 
 class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
     def __init__(self, **kwds):
@@ -84,7 +67,7 @@ class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
 
     name = "home_assistant_get_entity_state"
     description = """
-        Useful when you want to get the current state of a single entity. States can also contain useful attributes about said entity.
+        Get the current state of a single entity. States can also contain useful attributes about said entity.
         """
     args_schema: Type[BaseModel] = HomeAssistantEntityInput
 
@@ -112,7 +95,7 @@ class HomeAssistantGetAllEntitiesStateTool(HomeAssistantBaseTool):
 
     name = "home_assistant_get_all_entities_state"
     description = """
-        Useful when you want to get an overview of all entities. States can also contain useful attributes about said entity.
+        Get an overview of all entities, including their IDs and state. States can also contain useful attributes about said entity.
         """
     args_schema: Type[BaseModel] = HomeAssistantGetAllEntitiesStateSchema
 
@@ -143,7 +126,7 @@ class HomeAssistantTurnOnLightsTool(HomeAssistantBaseTool):
 
     name = "home_assistant_turn_on_lights"
     description = """
-        Useful when you want to turn on one or more lights, controlling their attributes, like color, brightness and transition duration.
+        Turn on one or more lights, controlling their attributes, like color, brightness and transition duration.
         """
     args_schema: Type[BaseModel] = HomeAssistantTurnOnLightsInput
 
@@ -177,34 +160,15 @@ class HomeAssistantAbility(BaseAbility):
         }
 
     def partial_sys_prompt(self) -> str:
-        return '''This smart home is controlled by Home Assistant.
+        return '''Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses.
 
-Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes commands succinctly. You have the personality of a secretely brilliant english butler who deeply enjoys serving your employers. However, you don't need to keep asking all the time if or how you can help.
+Answer the user's questions about the world truthfully. Be careful not to execute functions if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
 
-Answer the user's questions about the world truthfully. Be careful not to issue commands if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
-
-Usually the commands (like turning on or off a device) will require a list of entities to operate. Use only entities that exist (use home_assistant_get_all_entities_state to retrieve all entities when needed).'''
+Some functions (like turning on or off a device) will require a list of entities to operate. Use only entities that exist as returned by `home_assistant_get_all_entities_state`.'''
 
 
     async def chat_history(self) -> List[BaseMessage]:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f'{self.base_url}/api/template',
-                headers=self.headers,
-                json={
-                    'template': HOME_INFO_TEMPLATE,
-                }
-            ) as response:
-                response.raise_for_status()
-                plain_text = await response.text()
-                _LOGGER.debug(plain_text)
-                if response.status == 200:
-                    return [
-                        HumanMessage(content=plain_text, example=True),
-                        AIMessage(content='Got it! Ready to help.', example=True),
-                    ]
-                else:
-                    return []
+        return []
 
 
     def registered_tools(self) -> List[BaseTool]:

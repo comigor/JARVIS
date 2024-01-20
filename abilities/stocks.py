@@ -32,10 +32,7 @@ class CurrentStockPriceInput(BaseModel):
 
 class CurrentStockPriceTool(BaseTool):
     name = "get_current_stock_price"
-    description = """
-        Useful when you want to get current stock price.
-        You should enter the stock ticker symbol recognized by the yahoo finance
-        """
+    description = """Get current stock price. You should enter the stock ticker symbol recognized by yahoo finance."""
     args_schema: Type[BaseModel] = CurrentStockPriceInput
 
     def _run(self, ticker: str):
@@ -52,11 +49,9 @@ class StockPercentChangeInput(BaseModel):
 
 class StockPerformanceTool(BaseTool):
     name = "get_stock_performance"
-    description = """
-        Useful when you want to check performance of the stock.
-        You should enter the stock ticker symbol recognized by the yahoo finance.
-        You should enter days as number of days from today from which performance needs to be check.
-        output will be the change in the stock price represented as a percentage.
+    description = """Check performance of the stock. You should enter the stock ticker symbol recognized by yahoo finance.
+You should enter days as number of days from today from which performance needs to be check.
+Output will be the change in the stock price represented as a percentage.
         """
     args_schema: Type[BaseModel] = StockPercentChangeInput
 

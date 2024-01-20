@@ -10,12 +10,12 @@ from ..base import BaseAbility
 _LOGGER = logging.getLogger(__name__)
 
 class SendMessageMatrixSchema(BaseModel):
-    room_name: str = Field(description='Name of the Matrix room, group or person you want to send the message.')
+    room_name: str = Field(description='Name of the room, group or person you want to send the message to.')
     message: str = Field(description='Message content')
 
 class SendMessageMatrixTool(BaseTool):
     name = 'send_message_matrix_tool'
-    description = 'Send a message in a Matrix server room'
+    description = 'Send a message to a room, group or person'
     args_schema: Type[BaseModel] = SendMessageMatrixSchema
     
     async def _arun(self, room_name: str, message: str):
@@ -37,14 +37,14 @@ class SendMessageMatrixTool(BaseTool):
             ignore_unverified_devices=True,
         )
 
-        return f"Message sent to Matrix room {room['id']}."
+        return f"Message sent to room {room_name}."
 
     def _run(self, room_name: str, message: str):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
 class MatrixSendMessageAbility(BaseAbility):
     def partial_sys_prompt(self) -> str:
-        return ''
+        return 'You can also help with summarizing and replying to messages in a friendly, casual and conversational manner, and help user send short replies based on his suggestions of how to answer. Make sure to provide summaries of the messages as casually as possible WITHOUT just reading them out the details. Remember to mention the name of the sender and casually when each message was sent, but making sure to keep the total response as short as possible. DO NOT ask if anything else is needed or whether user wants to reply.'
 
     async def chat_history(self) -> List[BaseMessage]:
         return []
