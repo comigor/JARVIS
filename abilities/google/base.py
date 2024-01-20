@@ -3,12 +3,14 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
+from ..fuckio import async_add_executor_job
+
 GOOGLE_SCOPES = [
     'https://www.googleapis.com/auth/calendar.events',
     'https://www.googleapis.com/auth/tasks',
 ]
 
-def authenticate_with_google():
+def _authenticate_with_google():
     try:
         # The file token.json stores the user's access and refresh tokens, and it is
         # created automatically when the authorization flow completes for the first time.
@@ -36,3 +38,6 @@ def authenticate_with_google():
         return creds
     except Exception:
         return None
+
+async def authenticate_with_google():
+    return await async_add_executor_job(_authenticate_with_google)

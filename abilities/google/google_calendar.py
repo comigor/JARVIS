@@ -23,7 +23,7 @@ class GoogleCalendarTool(BaseTool):
 
     async def _arun(self, from_datetime: datetime, to_datetime: datetime):
         try:
-            creds = authenticate_with_google()
+            creds = await authenticate_with_google()
 
             # Build the Google Calendar API service
             service = build('calendar', 'v3', credentials=creds)
@@ -73,7 +73,7 @@ class CreateGoogleCalendarEventTool(BaseTool):
 
     async def _arun(self, summary: str, start_datetime: datetime, end_datetime: datetime, location: str):
         try:
-            creds = authenticate_with_google()
+            creds = await authenticate_with_google()
 
             # Build the Google Calendar API service
             service = build('calendar', 'v3', credentials=creds)

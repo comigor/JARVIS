@@ -48,7 +48,7 @@ class GoogleTasksTool(BaseTool):
         show_hidden: bool = False
     ):
         try:
-            creds = authenticate_with_google()
+            creds = await authenticate_with_google()
 
             # Build the Google Tasks API service
             service = build('tasks', 'v1', credentials=creds)
@@ -92,7 +92,7 @@ class CreateGoogleTaskTool(BaseTool):
 
     async def _arun(self, title: str, due_datetime: datetime):
         try:
-            creds = authenticate_with_google()
+            creds = await authenticate_with_google()
 
             # Build the Google Tasks API service
             service = build('tasks', 'v1', credentials=creds)
