@@ -57,7 +57,7 @@ async def get_ai(openai_api_key: str, abilities: [BaseAbility]) -> AgentExecutor
         chat_history=chat_history_examples,
     )
     agent = OpenAIFunctionsAgent(llm=llm, tools=all_tools, prompt=prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=all_tools) #, verbose=True)
+    agent_executor = AgentExecutor(agent=agent, tools=all_tools, verbose=True)
 
     return RunnableWithMessageHistory(
         agent_executor,

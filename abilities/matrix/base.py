@@ -4,10 +4,22 @@ import json
 import re
 from fuzzywuzzy import fuzz
 import aiofiles
+import os, asyncio
+from pathlib import Path
 
 json_fname = 'jarvis-config/rooms.json'
 CONFIG_FILE = 'jarvis-config/credentials.json'  # login credentials JSON file
 STORE_PATH = './jarvis-config/store/'  # local directory
+
+
+def get_full_file_path(relative_path: str) -> str:
+    path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.joinpath(relative_path)
+    if not path.is_file():
+        path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.parent.joinpath(relative_path)
+        if not path.is_file():
+            raise Exception(f'Could not find file: {relative_path}')
+
+    return str(path)
 
 
 async def authenticate_with_matrix():
@@ -20,7 +32,7 @@ async def authenticate_with_matrix():
         )
 
         # open the file in read-only mode
-        async with aiofiles.open(CONFIG_FILE, "r") as f:
+        async with aiofiles.open(get_full_file_path(CONFIG_FILE), "r") as f:
             contents = await f.read()
         config = json.loads(contents)
         # Initialize the matrix client based on credentials from file
@@ -28,7 +40,7 @@ async def authenticate_with_matrix():
             config["homeserver"],
             config["user_id"],
             device_id=config["device_id"],
-            store_path=STORE_PATH,
+            store_path=get_full_file_path(STORE_PATH),
             config=client_config,
         )
 
@@ -82,7 +94,7 @@ async def retrieve_and_cache_rooms(client: AsyncClient):
         #     print(f"{room.display_name} ({source}) - No names found")
 
     print(f"\nFound {len(rooms_json)} rooms! Writing to {json_fname}")
-    with open(json_fname, 'w') as f:
+    with open(get_full_file_path(json_fname), 'w') as f:
         f.write(json.dumps(rooms_json, indent=4))
 
     print(f"\nUpdated {json_fname}")
