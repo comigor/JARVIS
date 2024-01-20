@@ -7,6 +7,7 @@ from langchain_core.messages import BaseMessage
 
 from .base import authenticate_with_google
 from ..base import BaseAbility
+from ..fuckio import async_add_executor_job
 
 class ListGoogleTasksSchema(BaseModel):
     from_datetime: datetime = Field(
@@ -51,7 +52,7 @@ class GoogleTasksTool(BaseTool):
             creds = await authenticate_with_google()
 
             # Build the Google Tasks API service
-            service = build('tasks', 'v1', credentials=creds)
+            service = await async_add_executor_job(build, 'tasks', 'v1', credentials=creds)
 
             # Format the datetime objects to RFC3339
             from_datetime_str = from_datetime.astimezone(timezone.utc).isoformat() if from_datetime else None
@@ -95,7 +96,7 @@ class CreateGoogleTaskTool(BaseTool):
             creds = await authenticate_with_google()
 
             # Build the Google Tasks API service
-            service = build('tasks', 'v1', credentials=creds)
+            service = await async_add_executor_job(build, 'tasks', 'v1', credentials=creds)
 
             # Format the datetime object to RFC3339
             due_datetime_str = due_datetime.astimezone(timezone.utc).isoformat() if due_datetime else None

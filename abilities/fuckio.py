@@ -1,4 +1,5 @@
 import asyncio
+import functools
 from collections.abc import Callable
 from typing import Any, TypeVar
 _T = TypeVar("_T")
@@ -7,7 +8,10 @@ _T = TypeVar("_T")
 def async_add_executor_job(
     target: Callable[..., _T],
     *args: Any,
+    **kwargs: Any,
 ) -> asyncio.Future[_T]:
     """Add an executor job from within the event loop."""
     loop = asyncio.get_running_loop()
-    return loop.run_in_executor(None, target, *args)
+    return loop.run_in_executor(None, functools.partial(
+        target, *args, **kwargs,
+    ))

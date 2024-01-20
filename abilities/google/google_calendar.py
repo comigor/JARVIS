@@ -7,6 +7,7 @@ from langchain_core.messages import BaseMessage
 
 from .base import authenticate_with_google
 from ..base import BaseAbility
+from ..fuckio import async_add_executor_job
 
 class GoogleCalendarEventsSchema(BaseModel):
     from_datetime: datetime = Field(
@@ -26,7 +27,7 @@ class GoogleCalendarTool(BaseTool):
             creds = await authenticate_with_google()
 
             # Build the Google Calendar API service
-            service = build('calendar', 'v3', credentials=creds)
+            service = await async_add_executor_job(build, 'calendar', 'v3', credentials=creds)
 
             # Format the datetime objects to RFC3339
             from_datetime_str = from_datetime.astimezone(timezone.utc).isoformat()
@@ -76,7 +77,7 @@ class CreateGoogleCalendarEventTool(BaseTool):
             creds = await authenticate_with_google()
 
             # Build the Google Calendar API service
-            service = build('calendar', 'v3', credentials=creds)
+            service = await async_add_executor_job(build, 'calendar', 'v3', credentials=creds)
 
             # Format the datetime objects to RFC3339
             start_datetime_str = start_datetime.astimezone(timezone.utc).isoformat()

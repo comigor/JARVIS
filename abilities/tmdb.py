@@ -5,6 +5,7 @@ from langchain_core.messages import BaseMessage
 from tmdbv3api import TMDb, Movie, Search
 
 from .base import BaseAbility
+from .fuckio import async_add_executor_job
 
 class SearchMovieSchema(BaseModel):
     movie_name: str = Field(description='Name of the movie you want to search for')
@@ -26,7 +27,7 @@ class SearchMovieTool(BaseTool):
 
         # Search for the movie
         search = Search()
-        results = search.movies(term=movie_name)
+        results = await async_add_executor_job(search.movies, term=movie_name)
 
         if not results:
             return None, "No results found for the specified movie."
@@ -39,13 +40,13 @@ class SearchMovieTool(BaseTool):
         detailed_info_filtered = {}
 
         try:
-            watch_providers = movie.watch_providers(movie_id)
+            watch_providers = await async_add_executor_job(movie.watch_providers, movie_id)
             watch_providers_filtered = list(map(lambda p: p['provider_name'], next(x for x in watch_providers['results'] if x.get('BR')).get('BR')[1].get('flatrate', [])))
         except:
             ...
 
         try:
-            detailed_info = movie.details(movie_id)
+            detailed_info = await async_add_executor_job(movie.details, movie_id)
             keys_to_filter = ['id', 'homepage', 'title', 'overview', 'tagline', 'release_date', 'runtime', 'vote_average']
             detailed_info_filtered = dict(zip(keys_to_filter, [detailed_info[k] for k in keys_to_filter]))
         except:
