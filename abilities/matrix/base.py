@@ -1,16 +1,14 @@
-import asyncio
+import asyncio, logging, json, re, aiofiles
 from nio import AsyncClient, AsyncClientConfig
-import json
-import re
 from fuzzywuzzy import fuzz
-import aiofiles
 from pathlib import Path
 
 from const import ROOT_DIR
 
 json_fname = 'jarvis-config/rooms.json'
 CONFIG_FILE = 'jarvis-config/credentials.json'  # login credentials JSON file
-STORE_PATH = './jarvis-config/store/'  # local directory
+STORE_PATH = 'jarvis-config/store/'  # local directory
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_full_file_path(relative_path: str) -> str:
@@ -54,6 +52,7 @@ async def authenticate_with_matrix():
     return client
 
 async def retrieve_and_cache_rooms(client: AsyncClient):
+    # Hacky way to _really_ sync fully
     client.next_batch = None
     client.loaded_sync_token = None
     await client.sync(60000, full_state = True)
@@ -72,11 +71,6 @@ async def retrieve_and_cache_rooms(client: AsyncClient):
         
         if (not source):
             source = room.display_name
-        
-        if (room_id == '!jgWE3HRXsPCOXlaCjnPS:beeper.local'):
-            print('breakpoint')
-
-        # names = list(filter(lambda x: x.lower() not in ["name_to_filter_1", "name_to_filter_2"], names))
 
         rooms_json[room_id] = {
             'id': room_id,
@@ -86,16 +80,12 @@ async def retrieve_and_cache_rooms(client: AsyncClient):
             'unread_highlights': room.unread_highlights,
             'unread_notifications': room.unread_notifications,
         }
-        # if(names):
-        #     print(f"{names[0]} ({source})  [{len(names)}]")
-        # else:
-        #     print(f"{room.display_name} ({source}) - No names found")
 
-    print(f"\nFound {len(rooms_json)} rooms! Writing to {json_fname}")
+    _LOGGER.info(f"\nFound {len(rooms_json)} rooms! Writing to {json_fname}")
     with open(get_full_file_path(json_fname), 'w') as f:
         f.write(json.dumps(rooms_json, indent=4))
 
-    print(f"\nUpdated {json_fname}")
+    _LOGGER.info(f"\nUpdated {json_fname}")
     await client.close()
 
     return rooms_json
