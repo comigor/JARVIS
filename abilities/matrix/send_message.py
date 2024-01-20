@@ -17,29 +17,23 @@ class SendMessageMatrixTool(BaseTool):
     
     async def _arun(self, room_name: str, message: str):
         client = await authenticate_with_matrix()
+        rooms = await retrieve_and_cache_rooms(client)
+        room = find_room_id_by_name(rooms, room_name)
 
-        try:
-            rooms = await retrieve_and_cache_rooms(client)
-            room = find_room_id_by_name(rooms, room_name)
+        print(f"Sending message to Matrix room {room['id']}.")
 
-            print(f"Sending message to Matrix room {room['id']}.")
+        # Join the room (if not already joined)
+        await client.room_invite(room['id'], client.user_id)
+        await client.join(room['id'])
 
-            # Join the room (if not already joined)
-            await client.room_invite(room['id'], client.user_id)
-            await client.join(room['id'])
+        # Send the message
+        await client.room_send(
+            room['id'],
+            message_type="m.room.message",
+            content={"msgtype": "m.text", "body": f".{message}"},
+        )
 
-            # Send the message
-            await client.room_send(
-                room['id'],
-                message_type="m.room.message",
-                content={"msgtype": "m.text", "body": f".{message}"},
-            )
-
-            return f"Message sent to Matrix room {room['id']}.", None
-
-        except Exception as e:
-            error_str = str(e)
-            return None, error_str
+        return f"Message sent to Matrix room {room['id']}.", None
 
     def _run(self, room_name: str, message: str):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")

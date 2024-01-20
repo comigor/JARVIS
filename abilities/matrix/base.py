@@ -23,37 +23,34 @@ def get_full_file_path(relative_path: str) -> str:
 
 
 async def authenticate_with_matrix():
-    try:
-        client_config = AsyncClientConfig(
-            max_limit_exceeded=0,
-            max_timeouts=0,
-            store_sync_tokens=True,
-            encryption_enabled=True,
-        )
+    client_config = AsyncClientConfig(
+        max_limit_exceeded=0,
+        max_timeouts=0,
+        store_sync_tokens=True,
+        encryption_enabled=True,
+    )
 
-        # open the file in read-only mode
-        async with aiofiles.open(get_full_file_path(CONFIG_FILE), "r") as f:
-            contents = await f.read()
-        config = json.loads(contents)
-        # Initialize the matrix client based on credentials from file
-        client = AsyncClient(
-            config["homeserver"],
-            config["user_id"],
-            device_id=config["device_id"],
-            store_path=get_full_file_path(STORE_PATH),
-            config=client_config,
-        )
+    # open the file in read-only mode
+    async with aiofiles.open(get_full_file_path(CONFIG_FILE), "r") as f:
+        contents = await f.read()
+    config = json.loads(contents)
+    # Initialize the matrix client based on credentials from file
+    client = AsyncClient(
+        config["homeserver"],
+        config["user_id"],
+        device_id=config["device_id"],
+        store_path=get_full_file_path(STORE_PATH),
+        config=client_config,
+    )
 
-        client.restore_login(
-            user_id=config["user_id"],
-            device_id=config["device_id"],
-            access_token=config["access_token"],
-        )
-        print("Logged in using stored credentials.")
+    client.restore_login(
+        user_id=config["user_id"],
+        device_id=config["device_id"],
+        access_token=config["access_token"],
+    )
+    print("Logged in using stored credentials.")
 
-        return client
-    except Exception:
-        return None
+    return client
 
 async def retrieve_and_cache_rooms(client: AsyncClient):
     client.next_batch = None

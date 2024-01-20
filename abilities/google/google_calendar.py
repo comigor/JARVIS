@@ -23,33 +23,28 @@ class GoogleCalendarTool(BaseTool):
     args_schema: Type[BaseModel] = GoogleCalendarEventsSchema
 
     async def _arun(self, from_datetime: datetime, to_datetime: datetime):
-        try:
-            creds = await authenticate_with_google()
+        creds = await authenticate_with_google()
 
-            # Build the Google Calendar API service
-            service = await async_add_executor_job(build, 'calendar', 'v3', credentials=creds)
+        # Build the Google Calendar API service
+        service = await async_add_executor_job(build, 'calendar', 'v3', credentials=creds)
 
-            # Format the datetime objects to RFC3339
-            from_datetime_str = from_datetime.astimezone(timezone.utc).isoformat()
-            to_datetime_str = to_datetime.astimezone(timezone.utc).isoformat()
+        # Format the datetime objects to RFC3339
+        from_datetime_str = from_datetime.astimezone(timezone.utc).isoformat()
+        to_datetime_str = to_datetime.astimezone(timezone.utc).isoformat()
 
-            # Get events for the specified time range
-            events_result = service.events().list(
-                calendarId='primary',
-                timeMin=from_datetime_str,
-                timeMax=to_datetime_str,
-                maxResults=10,  # You can adjust the number of results as needed
-                singleEvents=True,
-                orderBy='startTime'
-            ).execute()
+        # Get events for the specified time range
+        events_result = service.events().list(
+            calendarId='primary',
+            timeMin=from_datetime_str,
+            timeMax=to_datetime_str,
+            maxResults=10,  # You can adjust the number of results as needed
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
 
-            events = events_result.get('items', [])
-            
-            return events, None  # Success, return events JSON and no error
-
-        except Exception as e:
-            error_str = str(e)
-            return None, error_str  # Error occurred, return None for events and the error string
+        events = events_result.get('items', [])
+        
+        return events
 
     def _run(self, from_datetime: datetime, to_datetime: datetime):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
@@ -73,35 +68,30 @@ class CreateGoogleCalendarEventTool(BaseTool):
     args_schema: Type[BaseModel] = CreateGoogleCalendarEventSchema
 
     async def _arun(self, summary: str, start_datetime: datetime, end_datetime: datetime, location: str):
-        try:
-            creds = await authenticate_with_google()
+        creds = await authenticate_with_google()
 
-            # Build the Google Calendar API service
-            service = await async_add_executor_job(build, 'calendar', 'v3', credentials=creds)
+        # Build the Google Calendar API service
+        service = await async_add_executor_job(build, 'calendar', 'v3', credentials=creds)
 
-            # Format the datetime objects to RFC3339
-            start_datetime_str = start_datetime.astimezone(timezone.utc).isoformat()
-            end_datetime_str = end_datetime.astimezone(timezone.utc).isoformat()
+        # Format the datetime objects to RFC3339
+        start_datetime_str = start_datetime.astimezone(timezone.utc).isoformat()
+        end_datetime_str = end_datetime.astimezone(timezone.utc).isoformat()
 
-            # Create the event body
-            event_body = {
-                'summary': summary,
-                'start': {'dateTime': start_datetime_str, 'timeZone': 'UTC'},
-                'end': {'dateTime': end_datetime_str, 'timeZone': 'UTC'},
-                **({'location': location} if location is not None else {}),
-            }
+        # Create the event body
+        event_body = {
+            'summary': summary,
+            'start': {'dateTime': start_datetime_str, 'timeZone': 'UTC'},
+            'end': {'dateTime': end_datetime_str, 'timeZone': 'UTC'},
+            **({'location': location} if location is not None else {}),
+        }
 
-            # Insert the event
-            created_event = service.events().insert(
-                calendarId='primary',
-                body=event_body
-            ).execute()
+        # Insert the event
+        created_event = service.events().insert(
+            calendarId='primary',
+            body=event_body
+        ).execute()
 
-            return created_event, None  # Success, return the created event JSON and no error
-
-        except Exception as e:
-            error_str = str(e)
-            return None, error_str  # Error occurred, return None for the created event and the error string
+        return created_event
 
     def _run(self, summary: str, start_datetime: datetime, end_datetime: datetime, location: str):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")

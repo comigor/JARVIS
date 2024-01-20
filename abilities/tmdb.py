@@ -39,18 +39,12 @@ class SearchMovieTool(BaseTool):
         watch_providers_filtered = []
         detailed_info_filtered = {}
 
-        try:
-            watch_providers = await async_add_executor_job(movie.watch_providers, movie_id)
-            watch_providers_filtered = list(map(lambda p: p['provider_name'], next(x for x in watch_providers['results'] if x.get('BR')).get('BR')[1].get('flatrate', [])))
-        except:
-            ...
+        watch_providers = await async_add_executor_job(movie.watch_providers, movie_id)
+        watch_providers_filtered = list(map(lambda p: p['provider_name'], next(x for x in watch_providers['results'] if x.get('BR')).get('BR')[1].get('flatrate', [])))
 
-        try:
-            detailed_info = await async_add_executor_job(movie.details, movie_id)
-            keys_to_filter = ['id', 'homepage', 'title', 'overview', 'tagline', 'release_date', 'runtime', 'vote_average']
-            detailed_info_filtered = dict(zip(keys_to_filter, [detailed_info[k] for k in keys_to_filter]))
-        except:
-            ...
+        detailed_info = await async_add_executor_job(movie.details, movie_id)
+        keys_to_filter = ['id', 'homepage', 'title', 'overview', 'tagline', 'release_date', 'runtime', 'vote_average']
+        detailed_info_filtered = dict(zip(keys_to_filter, [detailed_info[k] for k in keys_to_filter]))
 
         return {
             'watch_providers': watch_providers_filtered,
