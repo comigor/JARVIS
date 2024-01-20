@@ -20,6 +20,7 @@ from abilities.wikipedia import WikipediaAbility
 from abilities.matrix.send_message import MatrixSendMessageAbility
 
 from abilities.base import BaseAbility
+import const
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -30,7 +30,7 @@ class SearchMovieTool(BaseTool):
         results = await async_add_executor_job(search.movies, term=movie_name)
 
         if not results:
-            return None, "No results found for the specified movie."
+            return "No results found for the specified movie."
 
         # Retrieve detailed information about the first result
         movie_id = results[0].id
@@ -49,7 +49,7 @@ class SearchMovieTool(BaseTool):
         return {
             'watch_providers': watch_providers_filtered,
             'detailed_info': detailed_info_filtered,
-        }, None
+        }
 
     def _run(self, movie_name: str):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")

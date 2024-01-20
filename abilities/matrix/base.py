@@ -4,8 +4,9 @@ import json
 import re
 from fuzzywuzzy import fuzz
 import aiofiles
-import os, asyncio
 from pathlib import Path
+
+from const import ROOT_DIR
 
 json_fname = 'jarvis-config/rooms.json'
 CONFIG_FILE = 'jarvis-config/credentials.json'  # login credentials JSON file
@@ -13,10 +14,10 @@ STORE_PATH = './jarvis-config/store/'  # local directory
 
 
 def get_full_file_path(relative_path: str) -> str:
-    path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.joinpath(relative_path)
-    if not path.is_file():
-        path2 = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.parent.joinpath(relative_path)
-        if not path2.is_file():
+    path = Path(ROOT_DIR).joinpath(relative_path)
+    if not path.is_file() and not path.is_dir():
+        path2 = Path(ROOT_DIR).parent.joinpath(relative_path)
+        if not path2.is_file() and not path2.is_dir():
             raise Exception(f'Could not find file: {relative_path}. Tried {path} & {path2}')
         return str(path2)
     return str(path)

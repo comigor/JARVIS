@@ -33,7 +33,7 @@ class SendMessageMatrixTool(BaseTool):
             content={"msgtype": "m.text", "body": f".{message}"},
         )
 
-        return f"Message sent to Matrix room {room['id']}.", None
+        return f"Message sent to Matrix room {room['id']}."
 
     def _run(self, room_name: str, message: str):
         raise NotImplementedError("Synchronous execution is not supported for this tool.")
