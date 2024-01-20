@@ -15,10 +15,10 @@ STORE_PATH = './jarvis-config/store/'  # local directory
 def get_full_file_path(relative_path: str) -> str:
     path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.joinpath(relative_path)
     if not path.is_file():
-        path = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.parent.joinpath(relative_path)
-        if not path.is_file():
-            raise Exception(f'Could not find file: {relative_path}')
-
+        path2 = Path(os.path.realpath(globals().get('__file__', 'langbrain.py'))).parent.parent.joinpath(relative_path)
+        if not path2.is_file():
+            raise Exception(f'Could not find file: {relative_path}. Tried {path} & {path2}')
+        return str(path2)
     return str(path)
 
 
