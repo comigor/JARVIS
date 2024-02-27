@@ -44,7 +44,7 @@ class SendMessageMatrixTool(BaseTool):
 
 class MatrixSendMessageAbility(BaseAbility):
     def partial_sys_prompt(self) -> str:
-        return 'You can also help with summarizing and replying to messages in a friendly, casual and conversational manner, and help user send short replies based on his suggestions of how to answer. Make sure to provide summaries of the messages as casually as possible WITHOUT just reading them out the details. Remember to mention the name of the sender and casually when each message was sent, but making sure to keep the total response as short as possible. DO NOT ask if anything else is needed or whether user wants to reply.'
+        return ''
 
     async def chat_history(self) -> List[BaseMessage]:
         return []

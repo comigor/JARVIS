@@ -17,6 +17,7 @@ from abilities.google.google_tasks import GoogleTasksAbility
 from abilities.tmdb import MovieSearchAbility
 from abilities.wikipedia import WikipediaAbility
 from abilities.matrix.send_message import MatrixSendMessageAbility
+from abilities.matrix.get_last_messages import MatrixGetLastMessagesAbility
 
 from abilities.base import BaseAbility, get_full_file_path
 
@@ -83,6 +84,7 @@ async def get_ai_with_abilities():
             MovieSearchAbility(api_key=cp.get('jarvis', 'TMDB_API_KEY')),
             WikipediaAbility(),
             MatrixSendMessageAbility(),
+            MatrixGetLastMessagesAbility(),
         ],
     )
 
