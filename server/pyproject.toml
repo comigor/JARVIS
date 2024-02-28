@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "jarvis"
+version = "0.1.0"
+description = ""
+authors = ["Igor Borges <igor@borges.dev>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "~3.12"
+
+fastapi = "^0.110.0"
+uvicorn = "^0.27.1"
+
+pydantic = "^1"
+langchain = "^0.1.9"
+langchain-community = "^0.0.24"
+langchain-openai = "^0.0.8"
+langserve = "^0.0.44"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
