@@ -37,6 +37,10 @@ from langchain_core.utils.function_calling import convert_to_openai_tool
 from langchain_core.messages import AIMessage, FunctionMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+from langchain.tools.wikipedia.tool import WikipediaQueryRun
+from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
+from langchain_experimental.utilities import PythonREPL
+from langchain.agents import Tool
 
 from langserve import add_routes
 from pydantic import BaseModel, Field
@@ -49,7 +53,9 @@ prompt = ChatPromptTemplate.from_messages(
             "system",
             '''Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses, always trying to use less than 30 words.
 
-Answer the user's questions about the world truthfully. Be careful not to execute functions if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.''',
+Answer the user's questions about the world truthfully. Be careful not to execute functions if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
+
+Always remember to use tools to make sure you're doing the best you can. So when you need to know what day or what time is it, for example, use a Python shell. When you want to retrieve up-to-date information about a topic, use Wikipedia. When you aren't sure about the existence of an entity, list all home entities, etc.''',
         ),
         MessagesPlaceholder(variable_name="chat_history"),
         ("user", "{input}"),
@@ -69,9 +75,17 @@ def word_length(word: str) -> int:
 # but not when using the stream endpoint since the stream implementation for agent
 # streams action observation pairs not individual tokens.
 # See the client notebook that shows how to use the stream events endpoint.
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, streaming=True)
+llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0.25, streaming=True)
 
-tools = [word_length]
+tools = [
+    word_length,
+    WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),
+    Tool(
+        name="python_repl",
+        description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
+        func=PythonREPL().run,
+    ),
+]
 tools += HomeAssistantToolkit(base_url = os.environ['HOMEASSISTANT_URL'], api_key = os.environ['HOMEASSISTANT_KEY']).get_tools()
 
 
