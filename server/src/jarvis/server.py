@@ -26,6 +26,7 @@ Relevant LangChain documentation:
 import os
 from typing import Any, List, Union
 
+from datetime import datetime
 from fastapi import FastAPI
 from langchain.agents import AgentExecutor, tool
 from langchain.agents.format_scratchpad.openai_tools import (
@@ -46,16 +47,21 @@ from langserve import add_routes
 from pydantic import BaseModel, Field
 
 from jarvis.tools.homeassistant.toolkit import HomeAssistantToolkit
+from jarvis.tools.google.toolkit import GoogleToolkit
 
 prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            '''Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses, always trying to use less than 30 words.
+            f'''Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses, always trying to use less than 30 words.
 
 Answer the user's questions about the world truthfully. Be careful not to execute functions if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
 
-Always remember to use tools to make sure you're doing the best you can. So when you need to know what day or what time is it, for example, use a Python shell. When you want to retrieve up-to-date information about a topic, use Wikipedia. When you aren't sure about the existence of an entity, list all home entities, etc.''',
+Always remember to use tools to make sure you're doing the best you can. So when you need to know what day or what time is it, for example, use a Python shell. When you want to retrieve up-to-date information about a topic, use Wikipedia. When you aren't sure about the existence of an entity, list all home entities, etc.
+
+Right now is {datetime.now().astimezone().isoformat()}.
+Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.
+Weeks start on sunday and end on saturday. Consider local holidays and treat them as non-work days.''',
         ),
         MessagesPlaceholder(variable_name="chat_history"),
         ("user", "{input}"),
@@ -87,6 +93,7 @@ tools = [
     ),
 ]
 tools += HomeAssistantToolkit(base_url = os.environ['HOMEASSISTANT_URL'], api_key = os.environ['HOMEASSISTANT_KEY']).get_tools()
+tools += GoogleToolkit().get_tools()
 
 
 llm_with_tools = llm.bind(tools=[convert_to_openai_tool(tool) for tool in tools])

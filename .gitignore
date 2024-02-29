@@ -131,3 +131,5 @@ dmypy.json
 # llm history
 jarvis-config/*
 !jarvis-config/jarvis.conf.sample
+token.json
+credentials.json

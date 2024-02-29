@@ -8,7 +8,8 @@
             "name": "Python Debugger: Module",
             "type": "debugpy",
             "request": "launch",
-            "module": "jarvis.server"
+            "module": "jarvis.server",
+            "justMyCode": false
         }
     ]
 }

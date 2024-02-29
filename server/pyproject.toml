@@ -20,6 +20,10 @@ langchain-openai = "^0.0.8"
 langchain-experimental = "^0.0.52"
 
 wikipedia = "^1.4.0"
+google-api-python-client = "^2.119.0"
+google-auth-httplib2 = "^0.2.0"
+google-auth-oauthlib = "^1.2.0"
+beautifulsoup4 = "^4.12.3"
 
 [build-system]
 requires = ["poetry-core"]
