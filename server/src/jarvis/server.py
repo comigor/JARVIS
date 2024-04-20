@@ -35,9 +35,9 @@ Right now is {datetime.now().astimezone().isoformat()}.
 Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.
 Weeks start on sunday and end on saturday. Consider local holidays and treat them as non-work days.""",
         ),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("user", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
+        MessagesPlaceholder(variable_name="history"),
+        MessagesPlaceholder(variable_name="messages"),
+        # ("user", "{input}"),
     ]
 )
 
@@ -56,21 +56,56 @@ tools += HomeAssistantToolkit(
 tools += GoogleToolkit().get_tools()
 
 
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0.25, streaming=False)
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, streaming=False)
 llm_with_tools = llm.bind_tools(tools)
 
 from jarvis.graph import generate_graph
 
 graph = generate_graph(llm_with_tools, tools)
 
-app = FastAPI()
-add_routes(
-    app,
+chain = (
     {
         "messages": prompt | RunnableLambda(lambda x: x.messages),
     }
     | graph
-    | RunnableLambda(lambda x: x.get("agent").get("messages")[-1].content),
+    | RunnableLambda(lambda x: x.get("agent").get("messages")[-1].content)
+)
+
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
+
+store = {}
+
+
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()
+    return store[session_id]
+
+
+with_message_history = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    # input_messages_key="input",
+    input_messages_key="messages",
+    history_messages_key="history",
+)
+
+
+prompt2 = ChatPromptTemplate.from_messages(
+    [
+        ("user", "{input}"),
+    ]
+)
+
+app = FastAPI()
+add_routes(
+    app,
+    {
+        "messages": prompt2 | RunnableLambda(lambda x: x.messages),
+    }
+    | with_message_history,
 )
 
 
