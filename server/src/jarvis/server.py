@@ -2,17 +2,24 @@ from datetime import datetime
 from fastapi import FastAPI
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.runnables import RunnableLambda
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
 from langchain.agents import Tool
 from langchain.prompts import MessagesPlaceholder
 from langchain.tools.wikipedia.tool import WikipediaQueryRun
 from langserve import add_routes
+import logging
 import os
 
 from jarvis.tools.homeassistant.toolkit import HomeAssistantToolkit
 from jarvis.tools.google.toolkit import GoogleToolkit
+
+logging.basicConfig(
+    format="%(levelname)s [%(asctime)s] %(name)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.DEBUG,
+)
 
 prompt = ChatPromptTemplate.from_messages(
     [
@@ -55,20 +62,6 @@ llm_with_tools = llm.bind_tools(tools)
 from jarvis.graph import generate_graph
 
 graph = generate_graph(llm_with_tools, tools)
-
-from langchain_core.runnables.base import Runnable
-from typing import Sequence, Optional, Any
-from langchain_core.messages import BaseMessage
-from langchain_core.runnables.config import RunnableConfig
-from langchain_core.runnables import RunnableLambda
-
-
-class Bla(Runnable[Any, Sequence[BaseMessage]]):
-    def invoke(
-        self, input: Any, config: Optional[RunnableConfig] = None
-    ) -> Sequence[BaseMessage]:
-        return []
-
 
 app = FastAPI()
 add_routes(

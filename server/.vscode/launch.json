@@ -11,7 +11,8 @@
             "module": "jarvis.server",
             "justMyCode": false,
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/src"
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "LANGCHAIN_TRACING_V2": "true"
             }
         }
     ]
