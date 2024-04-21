@@ -10,7 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class HomeAssistantEntityInput(BaseModel):
     entity: str = Field(
-        description="The entity ID to retrieve the current state, e.g. switch.office_switch_1, light.bedroom_light, or sensor.pixel_7_pro_battery_level. Use only entities you know exist."
+        description="The entity ID to retrieve the current state, e.g. switch.office_switch_1, light.bedroom_light, or sensor.pixel_7_pro_battery_level. Use only entities you know exist, in doubt, run home_assistant_get_all_entities_state first."
     )
 
 
@@ -18,6 +18,9 @@ class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
     name = "home_assistant_get_entity_state"
     description = "Get the current state of a single entity. States can also contain useful attributes about said entity."
     args_schema: Type[BaseModel] = HomeAssistantEntityInput
+
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
     def _run(self, entity: str) -> str:
         response = self.client.get(

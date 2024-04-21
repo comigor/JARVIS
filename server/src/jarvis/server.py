@@ -1,21 +1,30 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 from fastapi import FastAPI
+import logging
+import os
+from typing import Any, Sequence
+
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompt_values import ChatPromptValue
+from langchain_core.messages import BaseMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
 from langchain.agents import Tool
 from langchain.prompts import MessagesPlaceholder
 from langchain.tools.wikipedia.tool import WikipediaQueryRun
+from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
+
 from langserve import add_routes
-import logging
-import os
 
 from jarvis.tools.homeassistant.toolkit import HomeAssistantToolkit
 from jarvis.tools.google.toolkit import GoogleToolkit
 from jarvis.tools.google.base import refresh_google_token
+from jarvis.graph import generate_graph
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +44,7 @@ prompt = ChatPromptTemplate.from_messages(
 
 Answer the user's questions about the world truthfully. Be careful not to execute functions if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
 
-Always remember to use tools to make sure you're doing the best you can. So when you need to know what day or what time is it, for example, use a Python shell. When you want to retrieve up-to-date information about a topic, use Wikipedia. When you aren't sure about the existence of an entity, list all home entities, etc.
+Always remember to use tools to make sure you're doing the best you can. So when you need to know what day or what time is it, for example, use a Python shell. For tools related to Home control, always list all entities first, to avoid using non-existent entities.
 
 Right now is {datetime.now().astimezone().isoformat()}.
 Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.
@@ -49,7 +58,7 @@ Weeks start on sunday and end on saturday. Consider local holidays and treat the
 
 
 tools = [
-    WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),
+    WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),  # type: ignore
     Tool(
         name="python_repl",
         description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
@@ -65,21 +74,17 @@ tools += GoogleToolkit().get_tools()
 llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, streaming=False)
 llm_with_tools = llm.bind_tools(tools)
 
-from jarvis.graph import generate_graph
 
 graph = generate_graph(llm_with_tools, tools)
 
-chain = (
-    {
-        "messages": prompt | RunnableLambda(lambda x: x.messages),
-    }
-    | graph
-    | RunnableLambda(lambda x: x.get("agent", x).get("messages")[-1].content)
-)
 
-from langchain_community.chat_message_histories import ChatMessageHistory
-from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.runnables.history import RunnableWithMessageHistory
+def adapt_messages_dict(templ: ChatPromptValue) -> dict[str, Sequence[BaseMessage]]:
+    return {"messages": templ.messages}
+
+
+def get_agent_response(chain_result: dict[str, Any]) -> str:
+    return str(chain_result.get("agent", chain_result).get("messages")[-1].content)
+
 
 store = {}
 
@@ -90,6 +95,8 @@ def get_session_history(session_id: str) -> BaseChatMessageHistory:
     return store[session_id]
 
 
+chain = graph | RunnableLambda(get_agent_response)
+
 with_message_history = RunnableWithMessageHistory(
     chain,
     get_session_history,
@@ -99,19 +106,10 @@ with_message_history = RunnableWithMessageHistory(
 )
 
 
-prompt2 = ChatPromptTemplate.from_messages(
-    [
-        ("user", "{input}"),
-    ]
-)
-
 app = FastAPI()
 add_routes(
     app,
-    {
-        "messages": prompt2 | RunnableLambda(lambda x: x.messages),
-    }
-    | with_message_history,
+    prompt | RunnableLambda(adapt_messages_dict) | with_message_history,
 )
 
 

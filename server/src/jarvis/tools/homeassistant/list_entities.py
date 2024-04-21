@@ -11,10 +11,13 @@ _LOGGER = logging.getLogger(__name__)
 class HomeAssistantListEntitiesStateSchema(BaseModel): ...
 
 
-class HomeAssistantListEntitiesStateTool(HomeAssistantBaseTool):
-    name = "home_assistant_get_all_entities_state"
+class HomeAssistantListAllEntitiesTool(HomeAssistantBaseTool):
+    name = "home_assistant_list_all_entities"
     description = "Get an overview of all entities, including their IDs and state. States can also contain useful attributes about said entity."
     args_schema: Type[BaseModel] = HomeAssistantListEntitiesStateSchema
+
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
     def _run(self) -> str:
         response = self.client.get(

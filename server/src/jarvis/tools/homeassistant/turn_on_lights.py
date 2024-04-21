@@ -28,12 +28,15 @@ class HomeAssistantTurnOnLightsTool(HomeAssistantBaseTool):
     description = "Turn on one or more lights, controlling their attributes, like color, brightness and transition duration."
     args_schema: Type[BaseModel] = HomeAssistantTurnOnLightsInput
 
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
     def _run(
         self,
         entities: List[str] = [],
-        transition: float = None,
-        rgbw_color: List[int] = None,
-        brightness_pct: int = None,
+        transition: Optional[float] = None,
+        rgbw_color: Optional[List[int]] = None,
+        brightness_pct: Optional[int] = None,
     ) -> str:
         response = self.client.post(
             f"{self.base_url}/api/services/light/turn_on",

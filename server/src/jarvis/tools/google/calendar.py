@@ -22,6 +22,9 @@ class ListEventsTool(BaseTool):
     description = "List all events on Google Calendar for a specific time range"
     args_schema: Type[BaseModel] = ListEventsSchema
 
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
     def _run(self, from_datetime: datetime, to_datetime: datetime) -> str:
         creds = authenticate_with_google()
 
@@ -68,6 +71,9 @@ class CreateEventTool(BaseTool):
     name = "create_google_calendar_event_tool"
     description = "Create an event on Google Calendar"
     args_schema: Type[BaseModel] = CreateEventSchema
+
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
     def _run(
         self,

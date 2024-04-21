@@ -33,6 +33,9 @@ class ListTasksTool(BaseTool):
     description = "List tasks using Google Tasks API"
     args_schema: Type[BaseModel] = ListGoogleTasksSchema
 
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
     def _run(
         self,
         from_datetime: Optional[datetime] = None,
@@ -90,6 +93,9 @@ class CreateTaskTool(BaseTool):
     name = "google_create_task_tool"
     description = "Create a task using Google Tasks API"
     args_schema: Type[BaseModel] = CreateTaskSchema
+
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
     def _run(self, task_title: str, due_datetime: datetime) -> str:
         creds = authenticate_with_google()

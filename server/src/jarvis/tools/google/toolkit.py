@@ -2,7 +2,7 @@ import os
 from typing import List
 
 from langchain_community.agent_toolkits.base import BaseToolkit
-from langchain_community.tools import BaseTool
+from langchain_core.tools import BaseTool
 
 from langchain_google_community import GoogleSearchRun, GoogleSearchAPIWrapper
 
@@ -20,7 +20,7 @@ class GoogleToolkit(BaseToolkit):
                 api_wrapper=GoogleSearchAPIWrapper(
                     google_api_key=os.environ["GOOGLE_API_KEY"],
                     google_cse_id=os.environ["GOOGLE_CSE_ID"],
-                ),
+                ),  # type: ignore
             ),
             calendar.ListEventsTool(),
             calendar.CreateEventTool(),
