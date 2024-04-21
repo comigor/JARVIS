@@ -74,7 +74,7 @@ chain = (
         "messages": prompt | RunnableLambda(lambda x: x.messages),
     }
     | graph
-    | RunnableLambda(lambda x: x.get("agent").get("messages")[-1].content)
+    | RunnableLambda(lambda x: x.get("agent", x).get("messages")[-1].content)
 )
 
 from langchain_community.chat_message_histories import ChatMessageHistory

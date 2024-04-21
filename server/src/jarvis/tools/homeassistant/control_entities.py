@@ -44,5 +44,5 @@ class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
         return (
             json.dumps(json_obj)
             if response.status_code == 200
-            else f"Sorry, I can't do that (got error {response.status})"
+            else f"Sorry, I can't do that (got error {response.status_code})"
         )

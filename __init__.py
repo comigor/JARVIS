@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 import logging
 import traceback
+import httpx
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
@@ -13,55 +14,24 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, intent
 from homeassistant.util import ulid
 from typing import Literal
-from langchain.agents import AgentExecutor
 
-from . import langbrain
-from .abilities.homeassistant import HomeAssistantAbility
-
-from .const import (
-    CONF_OPENAI_KEY_KEY,
-    CONF_HA_KEY_KEY,
-    CONF_HA_URL_KEY,
-    DOMAIN,
-    CONF_GOOGLE_API_KEY,
-    CONF_GOOGLE_CX_KEY,
-)
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up OpenAI Conversation from a config entry."""
-    openai_key = entry.data.get(CONF_OPENAI_KEY_KEY)
-    homeassistant_key = entry.data.get(CONF_HA_KEY_KEY)
-    homeassistant_url = entry.data.get(CONF_HA_URL_KEY)
-    google_api_key = entry.data.get(CONF_GOOGLE_API_KEY)
-    google_cx_key = entry.data.get(CONF_GOOGLE_CX_KEY)
+    """Set up JARVIS from a config entry."""
+    # hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_OPENAI_KEY_KEY]
 
-    try:
-        abilities = []
-
-        abilities.extend([HomeAssistantAbility(api_key=homeassistant_key, base_url=homeassistant_url)]
-                         if (homeassistant_key and homeassistant_url) else [])
-        # abilities.extend([GoogleAbility(api_key=google_api_key, cx_key=google_cx_key)]
-        #                  if (google_api_key and google_cx_key) else [])
-
-        ai = await langbrain.get_ai_with_abilities()
-
-    except Exception as err:
-        _LOGGER.error(f"Sorry, I had a problem: {err}\n{traceback.format_exc()}")
-        return False
-
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_OPENAI_KEY_KEY]
-
-    conversation.async_set_agent(hass, entry, JARVISAgent(hass, ai, entry))
+    conversation.async_set_agent(hass, entry, JARVISAgent(hass, entry))
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload OpenAI."""
-    hass.data[DOMAIN].pop(entry.entry_id)
+    """Unload JARVIS."""
+    # hass.data[DOMAIN].pop(entry.entry_id)
     conversation.async_unset_agent(hass, entry)
     return True
 
@@ -69,11 +39,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class JARVISAgent(conversation.AbstractConversationAgent):
     """JARVIS conversation agent."""
 
-    def __init__(self, hass: HomeAssistant, ai: AgentExecutor, entry: ConfigEntry) -> None:
+    hass: HomeAssistant
+    entry: ConfigEntry
+    http_client: httpx.AsyncClient
+
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the agent."""
         self.hass = hass
-        self.ai = ai
         self.entry = entry
+        self.http_client = httpx.AsyncClient()
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -92,9 +66,24 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         last_msg_text = None
         try:
             _LOGGER.info('FULL ROUND:')
-            ai_response = await self.ai.ainvoke({'input': user_input.text}, config={'configurable': {'session_id': conversation_id}})
-            _LOGGER.info(f"msg: {ai_response.get('output')}")
-            last_msg_text = ai_response.get('output')
+            response = await self.http_client.post(
+                "",
+                json={
+                    "input": {"input": user_input.text},
+                    "config": {"configurable": {"session_id": conversation_id}},
+                },
+            )
+            response.raise_for_status()
+
+            json_obj = response.json()
+            _LOGGER.debug(json_obj)
+            last_msg_text = (
+                json_obj.get("output")
+                if response.status_code == 200
+                else f"Sorry, I can't do that (got error {response.status_code})"
+            )
+
+            _LOGGER.info(f"msg: {json_obj}")
         except Exception as err:
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(
