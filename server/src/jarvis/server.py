@@ -1,3 +1,4 @@
+from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 from fastapi import FastAPI
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
@@ -14,11 +15,16 @@ import os
 
 from jarvis.tools.homeassistant.toolkit import HomeAssistantToolkit
 from jarvis.tools.google.toolkit import GoogleToolkit
+from jarvis.tools.google.base import refresh_google_token
+
+
+_LOGGER = logging.getLogger(__name__)
+
 
 logging.basicConfig(
     format="%(levelname)s [%(asctime)s] %(name)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.DEBUG,
+    level=logging.INFO,
 )
 
 prompt = ChatPromptTemplate.from_messages(
@@ -109,7 +115,18 @@ add_routes(
 )
 
 
+scheduler = BackgroundScheduler()
+
+
+@scheduler.scheduled_job("interval", id="refresh_token", hours=1)
+def refresh_token():
+    _LOGGER.info("Refreshing Google user token...")
+    refresh_google_token()
+
+
 if __name__ == "__main__":
+    scheduler.start()
+
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=10055)
