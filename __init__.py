@@ -67,7 +67,7 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         try:
             _LOGGER.info('FULL ROUND:')
             response = await self.http_client.post(
-                "",
+                "http://192.168.10.20:10055/invoke",
                 json={
                     "input": {"input": user_input.text},
                     "config": {"configurable": {"session_id": conversation_id}},
