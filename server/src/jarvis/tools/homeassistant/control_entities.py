@@ -1,9 +1,8 @@
 import logging
 import json
-from typing import List, Any, Type, Optional
+from typing import List, Type
 from pydantic import BaseModel, Field
 from enum import Enum
-from langchain_core.runnables.config import run_in_executor
 
 from jarvis.tools.homeassistant.base import HomeAssistantBaseTool
 
@@ -46,14 +45,4 @@ class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
             json.dumps(json_obj)
             if response.status_code == 200
             else f"Sorry, I can't do that (got error {response.status})"
-        )
-
-    async def _arun(self, *args: Any, **kwargs: Any) -> str:
-        _LOGGER.log(args)
-        _LOGGER.log(kwargs)
-        return await run_in_executor(
-            None,
-            self._run,
-            *args,
-            **kwargs,
         )

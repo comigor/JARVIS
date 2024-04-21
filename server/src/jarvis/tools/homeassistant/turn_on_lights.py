@@ -1,8 +1,7 @@
 import json
 import logging
-from typing import List, Any, Type, Optional
+from typing import List, Type, Optional
 from pydantic import BaseModel, Field
-from langchain_core.runnables.config import run_in_executor
 
 from jarvis.tools.homeassistant.base import HomeAssistantBaseTool
 
@@ -57,12 +56,4 @@ class HomeAssistantTurnOnLightsTool(HomeAssistantBaseTool):
             json.dumps(json_obj)
             if response.status_code == 200
             else f"Sorry, I can't do that (got error {response.status})"
-        )
-
-    async def _arun(self, *args: Any, **kwargs: Any) -> str:
-        return await run_in_executor(
-            None,
-            self._run,
-            *args,
-            **kwargs,
         )
