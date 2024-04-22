@@ -57,7 +57,7 @@ tools += HomeAssistantToolkit(
 tools += GoogleToolkit().get_tools()
 
 
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, streaming=False)
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, streaming=False, timeout=45)
 llm_with_tools = llm.bind_tools(tools)
 
 
