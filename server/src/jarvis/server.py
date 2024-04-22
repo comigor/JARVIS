@@ -3,17 +3,14 @@ from datetime import datetime
 from fastapi import FastAPI
 import logging
 import os
-from typing import Any, Sequence
+from typing import Any
 
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompt_values import ChatPromptValue
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
 from langchain.agents import Tool
-from langchain.prompts import MessagesPlaceholder
 from langchain.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
@@ -36,11 +33,7 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            f"""Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses, always trying to use less than 30 words.
+system_message = f"""Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses, always trying to use less than 30 words.
 
 Answer the user's questions about the world truthfully. Be careful not to execute functions if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
 
@@ -48,14 +41,7 @@ Always remember to use tools to make sure you're doing the best you can. So when
 
 Right now is {datetime.now().astimezone().isoformat()}.
 Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.
-Weeks start on sunday and end on saturday. Consider local holidays and treat them as non-work days.""",
-        ),
-        MessagesPlaceholder(variable_name="history"),
-        MessagesPlaceholder(variable_name="messages"),
-        # ("user", "{input}"),
-    ]
-)
-
+Weeks start on sunday and end on saturday. Consider local holidays and treat them as non-work days."""
 
 tools = [
     WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),  # type: ignore
@@ -78,8 +64,8 @@ llm_with_tools = llm.bind_tools(tools)
 graph = generate_graph(llm_with_tools, tools)
 
 
-def adapt_messages_dict(templ: ChatPromptValue) -> dict[str, Sequence[BaseMessage]]:
-    return {"messages": templ.messages}
+def adapt_messages_dict(input: str) -> dict[str, Any]:
+    return {"messages": [HumanMessage(content=input)]}
 
 
 def get_agent_response(chain_result: dict[str, Any]) -> str:
@@ -91,25 +77,26 @@ store = {}
 
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
     if session_id not in store:
-        store[session_id] = ChatMessageHistory()
+        store[session_id] = ChatMessageHistory(
+            messages=[SystemMessage(content=system_message)],
+        )
     return store[session_id]
 
 
 chain = graph | RunnableLambda(get_agent_response)
 
 with_message_history = RunnableWithMessageHistory(
-    chain,
-    get_session_history,
-    # input_messages_key="input",
+    runnable=chain,
+    get_session_history=get_session_history,
     input_messages_key="messages",
     history_messages_key="history",
+    output_messages_key="output",
 )
-
 
 app = FastAPI()
 add_routes(
     app,
-    prompt | RunnableLambda(adapt_messages_dict) | with_message_history,
+    RunnableLambda(adapt_messages_dict) | with_message_history,
 )
 
 

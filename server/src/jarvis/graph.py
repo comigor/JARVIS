@@ -11,31 +11,40 @@ from langgraph.graph.graph import CompiledGraph
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
+    history: Sequence[BaseMessage]
 
 
 def generate_graph(
     llm_with_tools: Runnable[LanguageModelInput, BaseMessage],
     tools: List[BaseTool],
 ) -> CompiledGraph:
+    tool_map = {tool.name: tool for tool in tools}
+
     def _invoke_tool(tool_call: Any):
-        tool = {tool.name: tool for tool in tools}[tool_call["name"]]
         return ToolMessage(
-            content=tool.invoke(input=tool_call["args"]),
+            content=tool_map[tool_call["name"]].invoke(input=tool_call["args"]),
             tool_call_id=tool_call["id"],
         )
 
     tool_executor = RunnableLambda(_invoke_tool)
 
-    def should_continue(state: AgentState):
+    def should_continue(state: AgentState, config: Optional[RunnableConfig] = None):
         last_msg = state["messages"][-1]
         if isinstance(last_msg, AIMessage) and last_msg.tool_calls:
             return "continue"
         return "end"
 
     def call_model(state: AgentState, config: Optional[RunnableConfig] = None):
-        return {"messages": [llm_with_tools.invoke(state["messages"], config=config)]}
+        return {
+            "messages": [
+                llm_with_tools.invoke(
+                    [*state["history"], *state["messages"]],
+                    config=config,
+                )
+            ]
+        }
 
-    def call_tools(state: AgentState):
+    def call_tools(state: AgentState, config: Optional[RunnableConfig] = None):
         last_msg = state["messages"][-1]
         if isinstance(last_msg, AIMessage) and last_msg.tool_calls:
             return {"messages": tool_executor.batch(last_msg.tool_calls)}
