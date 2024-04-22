@@ -47,13 +47,13 @@ class JARVISAgent(conversation.AbstractConversationAgent):
 
     hass: HomeAssistant
     entry: ConfigEntry
-    http_client: httpx.AsyncClient
+    http_client: httpx.Client
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the agent."""
         self.hass = hass
         self.entry = entry
-        self.http_client = httpx.Client()
+        self.http_client = httpx.Client(timeout=45)
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -81,6 +81,7 @@ class JARVISAgent(conversation.AbstractConversationAgent):
             response = self.http_client.post(
                 "http://192.168.10.20:10055/invoke",
                 json=json_request,
+
             )
             response.raise_for_status()
 
