@@ -15,6 +15,7 @@ from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_community.utilities.google_serper import GoogleSerperAPIWrapper
 
 from langserve import add_routes
 
@@ -33,6 +34,7 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
+
 def make_system_message():
     return f"""Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses, always trying to use less than 30 words.
 
@@ -46,16 +48,22 @@ Right now is {datetime.now().strftime("%A, %Y-%m-%d %H:%M:%S")}.
 Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.
 Weeks start on sunday and end on saturday. Consider local holidays and treat them as non-work days."""
 
+
 tools = [
     Tool(
         name="wikipedia",
         description="A wrapper around Wikipedia. Useful for when you need to answer general questions about people, places, companies, facts, historical events, or other subjects. Input should be a search query.",
-        func=WikipediaAPIWrapper().run, # type: ignore
+        func=WikipediaAPIWrapper().run,  # type: ignore
     ),
     Tool(
         name="python_repl",
         description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
         func=PythonREPL().run,
+    ),
+    Tool(
+        name="Intermediate Answer",
+        func=GoogleSerperAPIWrapper().run,
+        description="Useful for when you need to ask with search, or to get any up to date information.",
     ),
 ]
 tools += HomeAssistantToolkit(
