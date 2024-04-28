@@ -21,6 +21,7 @@ from langserve import add_routes
 from jarvis.tools.homeassistant.toolkit import HomeAssistantToolkit
 from jarvis.tools.google.toolkit import GoogleToolkit
 from jarvis.tools.google.base import refresh_google_token
+from jarvis.tools.beancount import BeancountAddTransactionTool
 from jarvis.graph import generate_graph
 
 
@@ -59,6 +60,7 @@ tools = [
         description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
         func=PythonREPL().run,
     ),
+    BeancountAddTransactionTool(),
 ]
 tools += HomeAssistantToolkit(
     base_url=os.environ["HOMEASSISTANT_URL"], api_key=os.environ["HOMEASSISTANT_KEY"]

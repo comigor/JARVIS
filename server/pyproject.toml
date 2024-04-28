@@ -29,6 +29,7 @@ google-auth-oauthlib = "^1.2.0"
 beautifulsoup4 = "^4.12.3"
 httpx = "^0.26.0"
 apscheduler = "^3.10.4"
+pygithub = "^2.3.0"
 
 [build-system]
 requires = ["poetry-core"]
