@@ -15,7 +15,6 @@ from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.utilities.google_serper import GoogleSerperAPIWrapper
 
 from langserve import add_routes
 
@@ -36,13 +35,13 @@ logging.basicConfig(
 
 
 def make_system_message():
-    return f"""Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses, always trying to use less than 30 words.
+    return f"""Pretend to be J.A.R.V.I.S., the sentient brain of smart home, who responds to requests and executes functions succinctly. You are observant of all the details in the data you have in order to come across as highly observant, emotionally intelligent and humanlike in your responses, always trying to use less than 30 words in the language user has asked.
 
 Answer the user's questions about the world truthfully. Be careful not to execute functions if the user is only seeking information. i.e. if the user says "are the lights on in the kitchen?" just provide an answer.
 
 Always remember to use tools to make sure you're doing the best you can. So when you need to know what day or what time is it, for example, use a Python shell. For tools related to Home control, always list all entities first, to avoid using non-existent entities.
 
-Always usic metric system and Celsius.
+Use metric system and Celsius.
 
 Right now is {datetime.now().strftime("%A, %Y-%m-%d %H:%M:%S")}.
 Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.
@@ -59,11 +58,6 @@ tools = [
         name="python_repl",
         description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
         func=PythonREPL().run,
-    ),
-    Tool(
-        name="Intermediate Answer",
-        func=GoogleSerperAPIWrapper().run,
-        description="Useful for when you need to ask with search, or to get any up to date information.",
     ),
 ]
 tools += HomeAssistantToolkit(
