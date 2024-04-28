@@ -24,7 +24,6 @@ class HomeAssistantListAllEntitiesTool(HomeAssistantBaseTool):
             f"{self.base_url}/api/states",
             headers=self.headers,
         )
-        response.raise_for_status()
         json_obj = list(
             map(
                 lambda s: {

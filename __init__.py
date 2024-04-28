@@ -53,7 +53,7 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         """Initialize the agent."""
         self.hass = hass
         self.entry = entry
-        self.http_client = httpx.Client(timeout=45)
+        self.http_client = httpx.Client(timeout=5)
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -83,7 +83,6 @@ class JARVISAgent(conversation.AbstractConversationAgent):
                 json=json_request,
 
             )
-            response.raise_for_status()
 
             json_obj = response.json()
             _LOGGER.info(json_obj)

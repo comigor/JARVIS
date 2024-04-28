@@ -40,7 +40,6 @@ class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
                 **({"entity_id": entities} if entities is not None else {}),
             },
         )
-        response.raise_for_status()
         json_obj = response.json()
         _LOGGER.debug(json_obj)
         return (

@@ -52,7 +52,6 @@ class HomeAssistantTurnOnLightsTool(HomeAssistantBaseTool):
                 ),
             },
         )
-        response.raise_for_status()
         json_obj = response.json()
         _LOGGER.debug(json_obj)
         return (

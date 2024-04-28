@@ -27,7 +27,6 @@ class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
             f"{self.base_url}/api/states/{entity}",
             headers=self.headers,
         )
-        response.raise_for_status()
         json_obj = response.json()
         _LOGGER.debug(json_obj)
         return (
