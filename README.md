@@ -21,7 +21,15 @@ The main ability is, of course, HomeAssistant integration, but it could be expan
 ## Developing
 ```
 poetry install
-poetry run python custom_components/jarvis/brains.py
+poetry run python langbrain.py
+```
+
+## Abilities
+### Matrix
+```
+poetry run matrix-commander --credentials "$PWD/jarvis-config/credentials.json" --store "$PWD/jarvis-config/store" --login password
+# If using Beeper, verify this device on Element/Riot
+poetry run matrix-commander --credentials "$PWD/jarvis-config/credentials.json" --store "$PWD/jarvis-config/store" --verify
 ```
 
 ## References and credits
@@ -32,10 +40,7 @@ poetry run python custom_components/jarvis/brains.py
 ## TODO
 * fix config flow
 * allow selecting abilities on config flow
-* maybe use [langchain](https://github.com/langchain-ai/langchain)
 * integrate to local LLMs ([ref](https://www.reddit.com/r/homeassistant/comments/17h6zgh/comment/k6olxlu/?utm_source=share&utm_medium=web2x&context=3))
-* calendar (Google/HA)
-* reminders (does HA have them?)
 * audio warning to speakers
 * control music
 * ifood?
