@@ -10,11 +10,6 @@ GOOGLE_SCOPES = [
 
 
 def authenticate_with_google():
-    creds = Credentials.from_authorized_user_file("token.json", GOOGLE_SCOPES)
-    creds.refresh(Request())
-    with open("token.json", "w") as token:
-        token.write(creds.to_json())
-
     return get_gmail_credentials(scopes=GOOGLE_SCOPES)
 
 
