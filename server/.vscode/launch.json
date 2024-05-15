@@ -5,10 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Module",
+            "name": "JARVIS",
             "type": "debugpy",
             "request": "launch",
             "module": "jarvis.server",
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "LANGCHAIN_TRACING_V2": "true"
+            }
+        },
+        {
+            "name": "Matrix manual",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "jarvis.tools.matrix.manual",
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src",

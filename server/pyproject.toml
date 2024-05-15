@@ -30,6 +30,8 @@ beautifulsoup4 = "^4.12.3"
 httpx = "^0.26.0"
 apscheduler = "^3.10.4"
 pygithub = "^2.3.0"
+# matrix-nio = {extras = ["e2e"], version = "^0.24.0"}
+matrix-nio = {extras = ["e2e"], git = "https://github.com/comigor/matrix-nio.git", rev = "9a102c954ebaedfd9b5c71de2db9a12b4001e10b"}
 
 [build-system]
 requires = ["poetry-core"]
