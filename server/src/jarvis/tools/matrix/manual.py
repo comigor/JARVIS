@@ -3,32 +3,27 @@ import json
 import os
 import sys
 import aiofiles
+import pickle
+import re
 
 from nio import (
     AsyncClient,
     AsyncClientConfig,
-    InviteEvent,
     LoginResponse,
     MatrixRoom,
     RoomMessageText,
-    RoomNameEvent,
-    RoomTopicEvent,
     MegolmEvent,
     RoomKeyRequest,
-    Event,
     KeyVerificationCancel,
-    KeyVerificationEvent,
     KeyVerificationKey,
     KeyVerificationMac,
     KeyVerificationStart,
-    KeyVerificationAccept,
     ToDeviceError,
     LocalProtocolError,
-    JoinedRoomsResponse,
 )
 
-SESSION_DETAILS_FILE = "credentials2.json"
-STORE_FOLDER = "store2"
+SESSION_DETAILS_FILE = "matrix_credentials.json"
+STORE_FOLDER = "matrix_store"
 ALICE_PASSWORD = os.environ["MATRIX_PASSWORD"]
 
 class CustomEncryptedClient(AsyncClient):
@@ -54,30 +49,23 @@ class CustomEncryptedClient(AsyncClient):
             ssl=ssl,
             proxy=proxy,
         )
+        self._register_callbacks()
 
+    def _register_callbacks(self):
         # if the store location doesn't exist, we'll make it
-        if store_path and not os.path.isdir(store_path):
-            os.mkdir(store_path)
+        if self.store_path and not os.path.isdir(self.store_path):
+            os.mkdir(self.store_path)
 
-        # self.add_event_callback(self.cb_autojoin_room, InviteEvent)
-        self.add_event_callback(self.cb_print_messages, RoomMessageText)
-        # self.add_event_callback(self.olm_callback, MegolmEvent)
-        # self.add_event_callback(self.all_events, Event)
-        def key_share_cb(event: RoomKeyRequest):
-            user_id = event.sender
-            device_id = event.requesting_device_id
-            device = self.device_store[user_id][device_id]
-            self.verify_device(device)
-            for request in self.get_active_key_requests(
-                user_id, device_id):
-                self.continue_key_share(request)
-        self.add_to_device_callback(key_share_cb, (RoomKeyRequest,))
-        self.add_to_device_callback(self.key_verif, (KeyVerificationCancel,
-        KeyVerificationEvent,
-        KeyVerificationKey,
-        KeyVerificationMac,
-        KeyVerificationStart,
-        KeyVerificationAccept,))
+        self.add_event_callback(self._cb_handle_commands, RoomMessageText) # type: ignore
+        self.add_to_device_callback(self._cb_share_room_key, (RoomKeyRequest,)) # type: ignore
+        self.add_to_device_callback(self._cb_key_verification, (KeyVerificationCancel, KeyVerificationKey, KeyVerificationMac, KeyVerificationStart,)) # type: ignore
+        self.add_event_callback(self._cb_olm, MegolmEvent) # type: ignore
+
+    async def _cb_olm(self, room: MatrixRoom, event: MegolmEvent):
+        try:
+            await self.request_room_key(event)
+        except Exception as e:
+            print(f"Error while request keys: {repr(e)}")
 
     async def login(self) -> None:
         """Log in either using the global variables or (if possible) using the
@@ -107,6 +95,8 @@ class CustomEncryptedClient(AsyncClient):
                     f"Logged in using stored credentials: {self.user_id} on {self.device_id}"
                 )
 
+                await self.try_load_client()
+
             except OSError as err:
                 print(f"Couldn't load session from file. Logging in. Error: {err}")
             except json.JSONDecodeError:
@@ -124,59 +114,16 @@ class CustomEncryptedClient(AsyncClient):
                 print(f"Failed to log in: {resp}")
                 sys.exit(1)
 
-    async def olm_callback(self, room: MatrixRoom, event: MegolmEvent):
-        # print(f"Encrypted: {repr(event)}")
-        try:
-            await self.request_room_key(event)
-        except Exception as e:
-            print(f"Error while request keys: {repr(e)}")
+    async def _cb_share_room_key(self, event: RoomKeyRequest):
+        user_id = event.sender
+        device_id = event.requesting_device_id
+        device = self.device_store[user_id][device_id]
+        self.verify_device(device)
+        for request in self.get_active_key_requests(
+            user_id, device_id):
+            self.continue_key_share(request)
 
-    def all_events(self, room: MatrixRoom, event: Event):
-        print(f"event {repr(event)}")
-        # self.rooms[room.room_id] = room
-        ...
-
-    async def cb_autojoin_room(self, room: MatrixRoom, event: InviteEvent):
-        """Callback to automatically joins a Matrix room on invite.
-
-        Arguments:
-            room {MatrixRoom} -- Provided by nio
-            event {InviteEvent} -- Provided by nio
-        """
-        await self.join(room.room_id)
-        # room = self.rooms[room.room_id]
-        print(f"Room {room.name} is encrypted: {room.encrypted}")
-
-    async def cb_print_messages(self, room: MatrixRoom, event: RoomMessageText):
-        """Callback to print all received messages to stdout.
-
-        Arguments:
-            room {MatrixRoom} -- Provided by nio
-            event {RoomMessageText} -- Provided by nio
-        """
-        if event.decrypted:
-            encrypted_symbol = "🛡 "
-        else:
-            encrypted_symbol = "⚠️ "
-        print(
-            f"{room.display_name} |{encrypted_symbol}| {room.user_name(event.sender)}: {event.body}"
-        )
-
-        if event.body == '!full_sync' and event.sender == '@borges:beeper.com':
-            joined = await self.joined_rooms()
-            if isinstance(joined, JoinedRoomsResponse):
-                for r_id in joined.rooms:
-                    self.rooms[r_id] = MatrixRoom(r_id, self.user_id, True)
-                    # ddd = await self.room_get_state(r_id)
-                    # print(ddd)
-                self.next_batch = None
-                self.loaded_sync_token = None
-                synced = await self.sync(full_state=True) # force full sync, with since=""
-                a = 10
-        elif event.body == '!ping' and event.sender == '@borges:beeper.com':
-            await self.send_message(room.room_id, 'pong!')
-
-    async def key_verif(self, event):  # noqa
+    async def _cb_key_verification(self, event: KeyVerificationCancel | KeyVerificationKey | KeyVerificationMac | KeyVerificationStart):
         """Handle events sent to device."""
         try:
             client = self
@@ -212,35 +159,13 @@ class CustomEncryptedClient(AsyncClient):
 
                 print(f"{sas.get_emoji()}")
 
+                # automatically accept the emoji codes (this is probably not a good idea!)
                 resp = await client.confirm_short_auth_string(event.transaction_id)
                 if isinstance(resp, ToDeviceError):
                     print(f"confirm_short_auth_string failed with {resp}")
 
-                # yn = input("Do the emojis match? (Y/N) (C for Cancel) ")
-                # if yn.lower() == "y":
-                #     print(
-                #         "Match! The verification for this " "device will be accepted."
-                #     )
-                #     resp = await client.confirm_short_auth_string(event.transaction_id)
-                #     if isinstance(resp, ToDeviceError):
-                #         print(f"confirm_short_auth_string failed with {resp}")
-                # elif yn.lower() == "n":  # no, don't match, reject
-                #     print(
-                #         "No match! Device will NOT be verified "
-                #         "by rejecting verification."
-                #     )
-                #     resp = await client.cancel_key_verification(
-                #         event.transaction_id, reject=True
-                #     )
-                #     if isinstance(resp, ToDeviceError):
-                #         print(f"cancel_key_verification failed with {resp}")
-                # else:  # C or anything for cancel
-                #     print("Cancelled by user! Verification will be " "cancelled.")
-                #     resp = await client.cancel_key_verification(
-                #         event.transaction_id, reject=False
-                #     )
-                #     if isinstance(resp, ToDeviceError):
-                #         print(f"cancel_key_verification failed with {resp}")
+                # instead, we should do this (but I don't want to wait for input() on the server)
+                # https://matrix-nio.readthedocs.io/en/latest/examples.html#interactive-encryption-key-verification
 
             elif isinstance(event, KeyVerificationMac):
                 sas = client.key_verifications[event.transaction_id]
@@ -279,8 +204,69 @@ class CustomEncryptedClient(AsyncClient):
         except BaseException:
             print('sei la')
 
+    async def _cb_handle_commands(self, room: MatrixRoom, event: RoomMessageText):
+        if event.decrypted:
+            encrypted_symbol = "🛡️"
+        else:
+            encrypted_symbol = "⚠️"
+        print(
+            f"{room.display_name} |{encrypted_symbol}| {room.user_name(event.sender)}: {event.body}"
+        )
+
+        if event.sender == '@borges:beeper.com':
+            if event.body.startswith('!m'):
+                match = re.match(r'^!m +(?P<room_id>!.+:[^ ]+) +(?P<message>.*)', event.body)
+                if match:
+                    room_id = match.group("room_id")
+                    message = match.group("message")
+                    await self.send_message(room_id, message)
+                    await self.send_message(room.room_id, 'message sent')
+            elif event.body == '!full_sync':
+                await self.command_full_sync(room, event)
+                await self.send_message(room.room_id, 'rooms synced')
+            elif event.body == '!save':
+                await self.command_save_client()
+                await self.send_message(room.room_id, 'rooms saved')
+            elif event.body == '!ping':
+                await self.send_message(room.room_id, 'pong!')
+
+    async def command_full_sync(self, room: MatrixRoom, event: RoomMessageText):
+        self.next_batch = None
+        self.loaded_sync_token = None
+        await self.sync(full_state=True)
+        await self.command_save_client()
+
+    async def command_save_client(self):
+        try:
+            persist = {
+                "rooms": self.rooms,
+                "invited_rooms": self.invited_rooms,
+                "encrypted_rooms": self.encrypted_rooms,
+                "next_batch": self.next_batch,
+                "loaded_sync_token": self.loaded_sync_token,
+            }
+            with open('matrix_rooms.pickle', 'wb') as file:
+                pickle.dump(persist, file, protocol=pickle.HIGHEST_PROTOCOL)
+        except:
+            print('Error while savings rooms to pickle')
+
+    async def try_load_client(self):
+        try:
+            with open('matrix_rooms.pickle', 'rb') as file:
+                persisted = pickle.load(file)
+                self.rooms = persisted["rooms"]
+                self.invited_rooms = persisted["invited_rooms"]
+                self.encrypted_rooms = persisted["encrypted_rooms"]
+                self.next_batch = persisted["next_batch"]
+                self.loaded_sync_token = persisted["loaded_sync_token"]
+        except:
+            print('Error while loading rooms from pickle')
+
     async def send_message(self, room_id, message):
         try:
+            # Hack: as all rooms may not be synced, but the user already knows the room_id,
+            # we can do this to avoid errors when sending the message.
+            # I think this is not necessary anymore now that we're persisting rooms.
             try:
                 self.rooms[room_id]
             except KeyError:
@@ -320,36 +306,23 @@ class CustomEncryptedClient(AsyncClient):
                 f,
             )
 
-async def run_client(client: CustomEncryptedClient) -> None:
-    """A basic encrypted chat application using nio."""
-
-    await client.login()
-
-    # await client.sync(full_state=True)
-    # await client.synced.wait()
-
-    # await client.import_keys('element-keys.txt', input("Please input keys password: "))
-    await client.sync_forever(timeout=30000, full_state=True)
-    # await client.send_message("!NZLViIsAXbmQ6zDGOs20:beeper.local", "hello world")
-
 async def main():
-    config = AsyncClientConfig(store_sync_tokens=True)
-    client = CustomEncryptedClient(
-        homeserver="https://matrix.beeper.com",
-        user="@borges:beeper.com",
-        device_id='matrix-nio',
-        store_path=STORE_FOLDER,
-        config=config,
-    )
-
     try:
-        await run_client(client)
-    except (asyncio.CancelledError, KeyboardInterrupt):
+        config = AsyncClientConfig(store_sync_tokens=True)
+        client = CustomEncryptedClient(
+            homeserver="https://matrix.beeper.com",
+            user="@borges:beeper.com",
+            device_id='JARVIS',
+            store_path=STORE_FOLDER,
+            config=config,
+        )
+        await client.login()
+        await client.sync_forever(timeout=30000, full_state=True)
+    except:
         ...
+    print("Saving and exiting...")
+    await client.command_save_client()
     await client.close()
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        pass
+    asyncio.run(main())
