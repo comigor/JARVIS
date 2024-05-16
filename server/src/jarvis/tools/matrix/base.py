@@ -230,7 +230,7 @@ class CustomEncryptedClient(AsyncClient):
                 #     await self.send_message(room_id, message)
                 #     await self.send_message(room.room_id, "message sent")
                 ...
-            elif event.body.startswith("!s"):
+            elif event.body.startswith("!s "):
                 match = re.match(r"^!s +(?P<search_string>.*)", event.body)
                 if match:
                     search_string = match.group("search_string")
@@ -380,34 +380,20 @@ def main_init():
 
 client: Optional[CustomEncryptedClient] = None
 
-async def main():
+async def main(enc_client: Optional[CustomEncryptedClient]):
     global client
-    if not client:
-        try:
-            client = main_init()
-            await client.login()
-            await client.sync_forever(timeout=30000, full_state=True)
-        except Exception as e:
-            print(f"Error: {e}, {repr(e)}")
+    client = enc_client or main_init()
 
-# async def init_client():
-#     global client
-#     if not client:
-#         try:
-#             client = asyncio.run(main_init())
-#             asyncio.run(main(client))
-#         except Exception as e:
-#             print(f"Error: {e}, {repr(e)}")
+    await client.login()
+    await client.sync_forever(timeout=30000, full_state=True)
 
-# if __name__ == "__main__" or not client:
-# if not client:
-#     try:
-#         client = asyncio.run(main_init())
-#         loop = asyncio.get_running_loop()
-#         loop.create_task(main(client))
-#         # asyncio.run(main(client))
-#     except Exception as e:
-#         print(f"Error: {e}, {repr(e)}")
+async def _local_main():
+    client = main_init()
+    task = asyncio.create_task(main(client))
+    await task
+
+if __name__ == "__main__":
+    asyncio.run(_local_main())
 
 # if client:
 #     print("Saving and exiting...")

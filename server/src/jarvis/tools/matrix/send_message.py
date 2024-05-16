@@ -26,13 +26,7 @@ class MatrixSendMessageTool(BaseTool):
         super().__init__(**kwds)
 
     def _run(self, room_name: str, message: str) -> str:
-        import asyncio
-        # loop = asyncio.get_running_loop()
-        # loop = asyncio.new_event_loop()
-        # a = asyncio.run_coroutine_threadsafe(self._arun(room_name, message), loop)
-        # return a.result()
-        return asyncio.create_task(self._arun(room_name, message)).result()
-        # return asyncio.run(self._arun(room_name, message))
+        raise NotImplementedError("Synchronous execution is not supported for this tool.")
 
     async def _arun(self, room_name: str, message: str) -> str:
         from jarvis.tools.matrix.base import client
@@ -40,12 +34,10 @@ class MatrixSendMessageTool(BaseTool):
             room_info = client.find_room_id_by_name(room_name)
             if room_info:
                 resp = await client.send_message(room_info["id"], message)
-                a = 0
 
-        # _LOGGER.debug(f"Matrix.sendMessage: client {client}, room_info {room_info}, resp {resp}")
-
-        return (
-            "Message sent successfully."
-            if isinstance(resp, RoomSendResponse)
-            else f"Sorry, I can't do that."
-        )
+                return (
+                    "Message sent successfully."
+                    if isinstance(resp, RoomSendResponse)
+                    else f"Sorry, I can't do that."
+                )
+        return "Sorry, I can't do that."

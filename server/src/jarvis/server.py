@@ -4,7 +4,7 @@ from fastapi import FastAPI
 import logging
 import os
 import asyncio
-from asyncio import AbstractEventLoop
+from asyncio import Task
 from typing import Any
 
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
@@ -126,22 +126,29 @@ def refresh_token():
     refresh_google_token()
 
 
-def start_matrix(loop: AbstractEventLoop):
-    from jarvis.tools.matrix.base import main as matrix_main
-    loop.create_task(matrix_main())
+def start_matrix() -> Task:
+    from jarvis.tools.matrix.base import main as matrix_main, client as matrix_client
+    return asyncio.create_task(matrix_main(matrix_client))
 
 
-def start_uvicorn(loop: AbstractEventLoop):
+def start_uvicorn() -> Task:
     scheduler.start()
 
     import uvicorn
     config = uvicorn.Config(app, host="0.0.0.0", port=10055)
     server = uvicorn.Server(config)
-    loop.run_until_complete(server.serve())
+    return asyncio.create_task(server.serve())
+
 
 # https://stackoverflow.com/questions/76142431/how-to-run-another-application-within-the-same-running-event-loop
+# https://jacobpadilla.com/articles/handling-asyncio-tasks
+async def main():
+    tasks = [
+        start_matrix(),
+        start_uvicorn(),
+    ]
+    
+    _done, _pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+
 if __name__ == '__main__':
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    start_matrix(loop)
-    start_uvicorn(loop)
+    asyncio.run(main())

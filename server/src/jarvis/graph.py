@@ -26,28 +26,34 @@ def generate_graph(
             tool_call_id=tool_call["id"],
         )
 
-    tool_executor = RunnableLambda(_invoke_tool)
+    async def _ainvoke_tool(tool_call: Any):
+        return ToolMessage(
+            content=await tool_map[tool_call["name"]].ainvoke(input=tool_call["args"]),
+            tool_call_id=tool_call["id"],
+        )
 
-    def should_continue(state: AgentState, config: Optional[RunnableConfig] = None):
+    tool_executor = RunnableLambda(_invoke_tool, _ainvoke_tool)
+
+    async def should_continue(state: AgentState, config: Optional[RunnableConfig] = None):
         last_msg = state["messages"][-1]
         if isinstance(last_msg, AIMessage) and last_msg.tool_calls:
             return "continue"
         return "end"
 
-    def call_model(state: AgentState, config: Optional[RunnableConfig] = None):
+    async def call_model(state: AgentState, config: Optional[RunnableConfig] = None):
         return {
             "messages": [
-                llm_with_tools.invoke(
+                await llm_with_tools.ainvoke(
                     [*state["history"], *state["messages"]],
                     config=config,
                 )
             ]
         }
 
-    def call_tools(state: AgentState, config: Optional[RunnableConfig] = None):
+    async def call_tools(state: AgentState, config: Optional[RunnableConfig] = None):
         last_msg = state["messages"][-1]
         if isinstance(last_msg, AIMessage) and last_msg.tool_calls:
-            return {"messages": tool_executor.batch(last_msg.tool_calls)}
+            return {"messages": await tool_executor.abatch(last_msg.tool_calls)}
         return {"messages": []}
 
     workflow = StateGraph(AgentState)
