@@ -46,7 +46,9 @@ Use metric system and Celsius.
 
 Right now is {datetime.now().strftime("%A, %Y-%m-%d %H:%M:%S")}.
 Calendar events default to 1h, my timezone is -03:00, America/Sao_Paulo.
-Weeks start on sunday and end on saturday. Consider local holidays and treat them as non-work days."""
+Weeks start on sunday and end on saturday. Consider local holidays and treat them as non-work days.
+
+Think and execute tools in English, but but always answer in brazilian portuguese."""
 
 
 tools = [
@@ -68,7 +70,7 @@ tools += HomeAssistantToolkit(
 tools += GoogleToolkit().get_tools()
 
 
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, streaming=False, timeout=30)
+llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
 llm_with_tools = llm.bind_tools(tools)
 
 
