@@ -3,6 +3,8 @@ from datetime import datetime
 from fastapi import FastAPI
 import logging
 import os
+import asyncio
+from asyncio import AbstractEventLoop
 from typing import Any
 
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
@@ -21,6 +23,7 @@ from langserve import add_routes
 from jarvis.tools.homeassistant.toolkit import HomeAssistantToolkit
 from jarvis.tools.google.toolkit import GoogleToolkit
 from jarvis.tools.google.base import refresh_google_token
+from jarvis.tools.matrix.toolkit import MatrixToolkit
 from jarvis.tools.beancount import BeancountAddTransactionTool
 from jarvis.graph import generate_graph
 
@@ -68,6 +71,7 @@ tools += HomeAssistantToolkit(
     base_url=os.environ["HOMEASSISTANT_URL"], api_key=os.environ["HOMEASSISTANT_KEY"]
 ).get_tools()
 tools += GoogleToolkit().get_tools()
+tools += MatrixToolkit().get_tools()
 
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
@@ -122,9 +126,22 @@ def refresh_token():
     refresh_google_token()
 
 
-if __name__ == "__main__":
+def start_matrix(loop: AbstractEventLoop):
+    from jarvis.tools.matrix.base import main as matrix_main
+    loop.create_task(matrix_main())
+
+
+def start_uvicorn(loop: AbstractEventLoop):
     scheduler.start()
 
     import uvicorn
+    config = uvicorn.Config(app, host="0.0.0.0", port=10055)
+    server = uvicorn.Server(config)
+    loop.run_until_complete(server.serve())
 
-    uvicorn.run(app, host="0.0.0.0", port=10055)
+# https://stackoverflow.com/questions/76142431/how-to-run-another-application-within-the-same-running-event-loop
+if __name__ == '__main__':
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    start_matrix(loop)
+    start_uvicorn(loop)

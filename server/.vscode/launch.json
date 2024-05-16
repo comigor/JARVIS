@@ -19,7 +19,7 @@
             "name": "Matrix manual",
             "type": "debugpy",
             "request": "launch",
-            "module": "jarvis.tools.matrix.manual",
+            "module": "jarvis.tools.matrix.base",
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src",

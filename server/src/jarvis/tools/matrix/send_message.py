@@ -1,54 +1,51 @@
 import logging
-from typing import List, Type
+import json
+from typing import Type
 from pydantic import BaseModel, Field
-from nio import AsyncClient
-from langchain.tools import BaseTool
-from langchain_core.messages import BaseMessage
+from langchain_core.tools import BaseTool
+from nio import RoomSendResponse
 
-from .base import authenticate_with_matrix, retrieve_and_cache_rooms, find_room_id_by_name
-from ..base import BaseAbility
 _LOGGER = logging.getLogger(__name__)
 
-class SendMessageMatrixSchema(BaseModel):
-    room_name: str = Field(description='Name of the room, group or person you want to send the message to.')
-    message: str = Field(description='Message content')
 
-class SendMessageMatrixTool(BaseTool):
-    name = 'send_message_matrix_tool'
-    description = 'Send a message to a room, group or person'
-    args_schema: Type[BaseModel] = SendMessageMatrixSchema
-    
-    async def _arun(self, room_name: str, message: str):
-        client: AsyncClient = await authenticate_with_matrix()
-        rooms = await retrieve_and_cache_rooms(client)
-        room = find_room_id_by_name(rooms, room_name)
+class MatrixSendMessageInput(BaseModel):
+    room_name: str = Field(
+        description="Name of the room, group or person you want to send the message to."
+    )
+    message: str = Field(
+        description="Message content."
+    )
 
-        _LOGGER.info(f"Sending message '{message}' to Matrix room {room['id']}: {room}.")
 
-        # Join the room (if not already joined)
-        await client.room_invite(room['id'], client.user_id)
-        await client.join(room['id'])
+class MatrixSendMessageTool(BaseTool):
+    name = "matrix_send_message"
+    description = "Send a message to a room, group or person."
+    args_schema: Type[BaseModel] = MatrixSendMessageInput
 
-        # Send the message
-        await client.room_send(
-            room['id'],
-            message_type="m.room.message",
-            content={"msgtype": "m.text", "body": f".{message}"},
-            ignore_unverified_devices=True,
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
+    def _run(self, room_name: str, message: str) -> str:
+        import asyncio
+        # loop = asyncio.get_running_loop()
+        # loop = asyncio.new_event_loop()
+        # a = asyncio.run_coroutine_threadsafe(self._arun(room_name, message), loop)
+        # return a.result()
+        return asyncio.create_task(self._arun(room_name, message)).result()
+        # return asyncio.run(self._arun(room_name, message))
+
+    async def _arun(self, room_name: str, message: str) -> str:
+        from jarvis.tools.matrix.base import client
+        if client:
+            room_info = client.find_room_id_by_name(room_name)
+            if room_info:
+                resp = await client.send_message(room_info["id"], message)
+                a = 0
+
+        # _LOGGER.debug(f"Matrix.sendMessage: client {client}, room_info {room_info}, resp {resp}")
+
+        return (
+            "Message sent successfully."
+            if isinstance(resp, RoomSendResponse)
+            else f"Sorry, I can't do that."
         )
-
-        return f"Message sent to room {room_name}."
-
-    def _run(self, room_name: str, message: str):
-        raise NotImplementedError("Synchronous execution is not supported for this tool.")
-
-class MatrixSendMessageAbility(BaseAbility):
-    def partial_sys_prompt(self) -> str:
-        return ''
-
-    async def chat_history(self) -> List[BaseMessage]:
-        return []
-
-    def registered_tools(self) -> List[BaseTool]:
-        # Return instances of the tools you want to register
-        return [SendMessageMatrixTool()]

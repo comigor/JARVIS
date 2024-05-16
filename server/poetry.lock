@@ -657,6 +657,20 @@ files = [
 ]
 
 [[package]]
+name = "fuzzywuzzy"
+version = "0.18.0"
+description = "Fuzzy string matching in python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "fuzzywuzzy-0.18.0-py2.py3-none-any.whl", hash = "sha256:928244b28db720d1e0ee7587acf660ea49d7e4c632569cad4f1cd7e68a5f0993"},
+    {file = "fuzzywuzzy-0.18.0.tar.gz", hash = "sha256:45016e92264780e58972dca1b3d939ac864b78437422beecebb3095f8efd00e8"},
+]
+
+[package.extras]
+speedup = ["python-levenshtein (>=0.12)"]
+
+[[package]]
 name = "google-api-core"
 version = "2.19.0"
 description = "Google API client core library"
@@ -2803,4 +2817,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.1"
-content-hash = "3816e15ed756e2c919d15a13a7f452092fc1638671ad93073fad4e0a5a6a4597"
+content-hash = "ad412e4e60b8033d7551c4ea05bbd8605f5c31c38b296b6e713e27c66fc1e3b5"
