@@ -25,6 +25,7 @@ from jarvis.tools.google.toolkit import GoogleToolkit
 from jarvis.tools.google.base import refresh_google_token
 from jarvis.tools.matrix.toolkit import MatrixToolkit
 from jarvis.tools.beancount import BeancountAddTransactionTool
+from jarvis.tools.schedule_action import ScheduleActionTool
 from jarvis.graph import generate_graph
 
 
@@ -54,7 +55,10 @@ Weeks start on sunday and end on saturday. Consider local holidays and treat the
 Think and execute tools in English, but but always answer in brazilian portuguese."""
 
 
-tools = []
+tools = [
+    ScheduleActionTool(),
+    BeancountAddTransactionTool(),
+]
 tools += HomeAssistantToolkit(
     base_url=os.environ["HOMEASSISTANT_URL"], api_key=os.environ["HOMEASSISTANT_KEY"]
 ).get_tools()
@@ -69,10 +73,9 @@ tools += [
     ),
     Tool(
         name="python_repl",
-        description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
+        description="A Python shell. Use this to execute python commands. Input should be a valid python command. Always print the last line or the value you want with `print(...)`.",
         func=PythonREPL().run,
     ),
-    BeancountAddTransactionTool(),
 ]
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
