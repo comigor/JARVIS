@@ -10,7 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class HomeAssistantNotifyAlexaInput(BaseModel):
     message: str = Field(
-        description="The message to be converted to voice"
+        description="The message of the notification"
     )
     target: str = Field(
         description="The entity IDs of target device to send the notification to, e.g. media_player.igor_s_echo_dot"
@@ -19,7 +19,7 @@ class HomeAssistantNotifyAlexaInput(BaseModel):
 
 class HomeAssistantNotifyAlexaTool(HomeAssistantBaseTool):
     name = "home_assistant_notify_alexa"
-    description = "Useful when you want to send a voice notification, notify the user in real time."
+    description = "Useful when you want to send/display/ring notification using Alexa, notify in real time."
     args_schema: Type[BaseModel] = HomeAssistantNotifyAlexaInput
 
     def __init__(self, **kwds):

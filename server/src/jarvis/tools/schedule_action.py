@@ -24,7 +24,7 @@ class ScheduleActionTool(BaseTool):
     name = "schedule_action"
     description = """Use this when you want to schedule any action to be executed in the future by setting a timer and running a set of instructions.
 Provide complete instructions to execute the entire task as if it's time to execute it.
-For example, when the user request to "set an alarm for 4p.m.", the instructions should be "notify user their alarm has expired" 
+For example, when the user request to "set an alarm for 4p.m.", the instructions should be "notify alarm has expired"
 and when the user request to "at 4p.m, send a message to John saying wake up", the instructions should be "send a message to John: wake up"."""
     args_schema: Type[BaseModel] = ScheduleActionInput
 
