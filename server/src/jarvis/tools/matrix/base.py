@@ -5,9 +5,9 @@ import sys
 import aiofiles
 import pickle
 import re
+import logging
 from typing import Any, Optional
 from fuzzywuzzy import fuzz
-
 from nio import (
     AsyncClient,
     AsyncClientConfig,
@@ -27,9 +27,13 @@ from nio import (
     RoomSendError,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 SESSION_DETAILS_FILE = "matrix_credentials.json"
 STORE_FOLDER = "matrix_store"
-ALICE_PASSWORD = os.environ["MATRIX_PASSWORD"]
+MATRIX_SERVER = os.environ["MATRIX_SERVER"]
+MATRIX_USER = os.environ["MATRIX_USER"]
+MATRIX_PASSWORD = os.environ["MATRIX_PASSWORD"]
 
 class CustomEncryptedClient(AsyncClient):
     rooms_info_cache: dict[str, Any] = {}
@@ -73,7 +77,7 @@ class CustomEncryptedClient(AsyncClient):
         try:
             await self.request_room_key(event)
         except Exception as e:
-            print(f"Error while request keys: {repr(e)}")
+            _LOGGER.error(f"Error while request keys: {repr(e)}")
 
     async def login(self) -> None:
         """Log in either using the global variables or (if possible) using the
@@ -99,27 +103,27 @@ class CustomEncryptedClient(AsyncClient):
 
                 # This loads our verified/blacklisted devices and our keys
                 self.load_store()
-                print(
+                _LOGGER.info(
                     f"Logged in using stored credentials: {self.user_id} on {self.device_id}"
                 )
 
                 await self.try_load_client()
 
             except OSError as err:
-                print(f"Couldn't load session from file. Logging in. Error: {err}")
+                _LOGGER.error(f"Couldn't load session from file. Logging in. Error: {err}")
             except json.JSONDecodeError:
-                print("Couldn't read JSON file; overwriting")
+                _LOGGER.error("Couldn't read JSON file; overwriting")
 
         # We didn't restore a previous session, so we'll log in with a password
         if not self.user_id or not self.access_token or not self.device_id:
             # this calls the login method defined in AsyncClient from nio
-            resp = await super().login(ALICE_PASSWORD)
+            resp = await super().login(MATRIX_PASSWORD)
 
             if isinstance(resp, LoginResponse):
-                print("Logged in using a password; saving details to disk")
+                _LOGGER.info("Logged in using a password; saving details to disk")
                 self.__write_details_to_disk(resp)
             else:
-                print(f"Failed to log in: {resp}")
+                _LOGGER.error(f"Failed to log in: {resp}")
                 sys.exit(1)
 
     async def _cb_share_room_key(self, event: RoomKeyRequest):
@@ -135,29 +139,29 @@ class CustomEncryptedClient(AsyncClient):
         """Handle events sent to device."""
         try:
             client = self
-            print("to_device_callback")
-            print(repr(event))
+            _LOGGER.debug("to_device_callback")
+            _LOGGER.debug(repr(event))
 
             if isinstance(event, KeyVerificationStart):
                 if "emoji" not in event.short_authentication_string:
-                    print(
+                    _LOGGER.info(
                         "Other device does not support emoji verification "
                         f"{event.short_authentication_string}."
                     )
                     return
                 resp = await client.accept_key_verification(event.transaction_id)
                 if isinstance(resp, ToDeviceError):
-                    print(f"accept_key_verification failed with {resp}")
+                    _LOGGER.info(f"accept_key_verification failed with {resp}")
 
                 sas = client.key_verifications[event.transaction_id]
 
                 todevice_msg = sas.share_key()
                 resp = await client.to_device(todevice_msg)
                 if isinstance(resp, ToDeviceError):
-                    print(f"to_device failed with {resp}")
+                    _LOGGER.info(f"to_device failed with {resp}")
 
             elif isinstance(event, KeyVerificationCancel):
-                print(
+                _LOGGER.info(
                     f"Verification has been cancelled by {event.sender} "
                     f'for reason "{event.reason}".'
                 )
@@ -165,12 +169,12 @@ class CustomEncryptedClient(AsyncClient):
             elif isinstance(event, KeyVerificationKey):
                 sas = client.key_verifications[event.transaction_id]
 
-                print(f"{sas.get_emoji()}")
+                _LOGGER.info(f"{sas.get_emoji()}")
 
                 # automatically accept the emoji codes (this is probably not a good idea!)
                 resp = await client.confirm_short_auth_string(event.transaction_id)
                 if isinstance(resp, ToDeviceError):
-                    print(f"confirm_short_auth_string failed with {resp}")
+                    _LOGGER.info(f"confirm_short_auth_string failed with {resp}")
 
                 # instead, we should do this (but I don't want to wait for input() on the server)
                 # https://matrix-nio.readthedocs.io/en/latest/examples.html#interactive-encryption-key-verification
@@ -181,7 +185,7 @@ class CustomEncryptedClient(AsyncClient):
                     todevice_msg = sas.get_mac()
                 except LocalProtocolError as e:
                     # e.g. it might have been cancelled by ourselves
-                    print(
+                    _LOGGER.info(
                         f"Cancelled or protocol error: Reason: {e}.\n"
                         f"Verification with {event.sender} not concluded. "
                         "Try again?"
@@ -189,8 +193,8 @@ class CustomEncryptedClient(AsyncClient):
                 else:
                     resp = await client.to_device(todevice_msg)
                     if isinstance(resp, ToDeviceError):
-                        print(f"to_device failed with {resp}")
-                    print(
+                        _LOGGER.info(f"to_device failed with {resp}")
+                    _LOGGER.info(
                         f"sas.we_started_it = {sas.we_started_it}\n"
                         f"sas.sas_accepted = {sas.sas_accepted}\n"
                         f"sas.canceled = {sas.canceled}\n"
@@ -198,30 +202,30 @@ class CustomEncryptedClient(AsyncClient):
                         f"sas.verified = {sas.verified}\n"
                         f"sas.verified_devices = {sas.verified_devices}\n"
                     )
-                    print(
+                    _LOGGER.info(
                         "Emoji verification was successful!\n"
                         "Hit Control-C to stop the program or "
                         "initiate another Emoji verification from "
                         "another device or room."
                     )
             else:
-                print(
+                _LOGGER.info(
                     f"Received unexpected event type {type(event)}. "
                     f"Event is {event}. Event will be ignored."
                 )
-        except BaseException:
-            print('sei la')
+        except BaseException as e:
+            _LOGGER.error('Generic error {e}')
 
     async def _cb_handle_commands(self, room: MatrixRoom, event: RoomMessageText):
         if event.decrypted:
             encrypted_symbol = "🛡️ "
         else:
             encrypted_symbol = "⚠️ "
-        print(
+        _LOGGER.info(
             f"{room.display_name} |{encrypted_symbol}| {room.user_name(event.sender)}: {event.body}"
         )
 
-        if event.sender == "@borges:beeper.com":
+        if event.sender == MATRIX_USER:
             if event.body.startswith("!m"):
                 # match = re.match(r"^!m +(?P<room_id>!.+:[^ ]+) +(?P<message>.*)", event.body)
                 # if match:
@@ -264,7 +268,7 @@ class CustomEncryptedClient(AsyncClient):
             with open('matrix_rooms.pickle', 'wb') as file:
                 pickle.dump(persist, file, protocol=pickle.HIGHEST_PROTOCOL)
         except:
-            print('Error while savings rooms to pickle')
+            _LOGGER.error('Error while savings rooms to pickle')
 
     async def try_load_client(self):
         try:
@@ -277,7 +281,7 @@ class CustomEncryptedClient(AsyncClient):
                 self.loaded_sync_token = persisted.get("loaded_sync_token", None)
                 self.rooms_info_cache = persisted.get("rooms_info_cache", {})
         except:
-            print('Error while loading rooms from pickle')
+            _LOGGER.error('Error while loading rooms from pickle')
 
     async def send_message(self, room_id: str, message: str) -> RoomSendResponse | RoomSendError | None:
         try:
@@ -303,7 +307,7 @@ class CustomEncryptedClient(AsyncClient):
                 ignore_unverified_devices=True,
             )
         except Exception as e:
-            print(f"Error while sending message: {e}")
+            _LOGGER.error(f"Error while sending message: {e}")
 
     async def retrieve_and_cache_rooms(self, response: SyncResponse):
         self.rooms_info_cache = {}
@@ -371,8 +375,8 @@ class CustomEncryptedClient(AsyncClient):
 def main_init():
     config = AsyncClientConfig(store_sync_tokens=True)
     return CustomEncryptedClient(
-        homeserver="https://matrix.beeper.com",
-        user="@borges:beeper.com",
+        homeserver=MATRIX_SERVER,
+        user=MATRIX_USER,
         device_id='JARVIS',
         store_path=STORE_FOLDER,
         config=config,

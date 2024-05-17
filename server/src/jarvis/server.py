@@ -71,7 +71,8 @@ tools += HomeAssistantToolkit(
     base_url=os.environ["HOMEASSISTANT_URL"], api_key=os.environ["HOMEASSISTANT_KEY"]
 ).get_tools()
 tools += GoogleToolkit().get_tools()
-tools += MatrixToolkit().get_tools()
+if os.environ.get("ENABLE_MATRIX"):
+    tools += MatrixToolkit().get_tools()
 
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)

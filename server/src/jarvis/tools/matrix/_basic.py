@@ -84,8 +84,6 @@ class Callbacks:
         print(repr(response))
         a = 10
 
-# RoomKeyRequest(source={'content': {'action': 'request', 'body': {'algorithm': 'm.megolm.v1.aes-sha2', 'room_id': '!p7Jc1WGlE2cSaAWfbrEx:beeper.local', 'sender_key': 'd+RF1fIL2a1hNT8o2+xdWtPT3Qz4mKQDQmj0BaGV0mo', 'session_id': 'PcxHxb3vmJXff+lP9ze35c+l2lhy/57KlzIB1o3iFeI'}, 'request_id': 'mautrix-go_1715178164067170445_919', 'requesting_device_id': 'MAKPQDXQES'}, 'type': 'm.room_key_request', 'sender': '@borges:beeper.com'}, sender='@borges:beeper.com', requesting_device_id='MAKPQDXQES', request_id='mautrix-go_1715178164067170445_919', algorithm='m.megolm.v1.aes-sha2', room_id='!p7Jc1WGlE2cSaAWfbrEx:beeper.local', sender_key='d+RF1fIL2a1hNT8o2+xdWtPT3Qz4mKQDQmj0BaGV0mo', session_id='PcxHxb3vmJXff+lP9ze35c+l2lhy/57KlzIB1o3iFeI')
-
 async def main() -> None:
     # If there are no previously-saved credentials, we'll use the password
     if os.path.exists(CONFIG_FILE):
