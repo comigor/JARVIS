@@ -8,6 +8,8 @@ from jarvis.tools.homeassistant.turn_on_lights import HomeAssistantTurnOnLightsT
 from jarvis.tools.homeassistant.control_entities import HomeAssistantControlEntitiesTool
 from jarvis.tools.homeassistant.get_entity import HomeAssistantGetEntityTool
 from jarvis.tools.homeassistant.list_entities import HomeAssistantListAllEntitiesTool
+from jarvis.tools.homeassistant.notify_alexa import HomeAssistantNotifyAlexaTool
+from jarvis.tools.homeassistant.timer import HomeAssistantTimerTool
 
 
 class HomeAssistantToolkit(BaseToolkit):
@@ -27,4 +29,6 @@ class HomeAssistantToolkit(BaseToolkit):
             HomeAssistantListAllEntitiesTool(
                 base_url=self.base_url, api_key=self.api_key
             ),
+            HomeAssistantNotifyAlexaTool(base_url=self.base_url, api_key=self.api_key),
+            HomeAssistantTimerTool(base_url=self.base_url, api_key=self.api_key),
         ]

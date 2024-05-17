@@ -54,7 +54,14 @@ Weeks start on sunday and end on saturday. Consider local holidays and treat the
 Think and execute tools in English, but but always answer in brazilian portuguese."""
 
 
-tools = [
+tools = []
+tools += HomeAssistantToolkit(
+    base_url=os.environ["HOMEASSISTANT_URL"], api_key=os.environ["HOMEASSISTANT_KEY"]
+).get_tools()
+tools += GoogleToolkit().get_tools()
+if os.environ.get("ENABLE_MATRIX"):
+    tools += MatrixToolkit().get_tools()
+tools += [
     Tool(
         name="wikipedia",
         description="A wrapper around Wikipedia. Useful for when you need to answer general questions about people, places, companies, facts, historical events, or other subjects. Input should be a search query.",
@@ -67,13 +74,6 @@ tools = [
     ),
     BeancountAddTransactionTool(),
 ]
-tools += HomeAssistantToolkit(
-    base_url=os.environ["HOMEASSISTANT_URL"], api_key=os.environ["HOMEASSISTANT_KEY"]
-).get_tools()
-tools += GoogleToolkit().get_tools()
-if os.environ.get("ENABLE_MATRIX"):
-    tools += MatrixToolkit().get_tools()
-
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
 llm_with_tools = llm.bind_tools(tools)
@@ -145,10 +145,10 @@ def start_uvicorn() -> Task:
 # https://jacobpadilla.com/articles/handling-asyncio-tasks
 async def main():
     tasks = [
-        start_matrix(),
+        *([start_matrix()] if os.environ.get("ENABLE_MATRIX") is not None else []),
         start_uvicorn(),
     ]
-    
+
     _done, _pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
 if __name__ == '__main__':

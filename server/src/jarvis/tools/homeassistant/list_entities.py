@@ -33,7 +33,7 @@ class HomeAssistantListAllEntitiesTool(HomeAssistantBaseTool):
                 },
                 filter(
                     lambda s: s.get("entity_id").startswith(
-                        ("light", "switch", "sensor")
+                        ("light", "switch", "sensor", "media_player")
                     ),
                     response.json(),
                 ),
