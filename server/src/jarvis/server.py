@@ -129,6 +129,12 @@ def refresh_token():
     _LOGGER.info("Refreshing Google user token...")
     refresh_google_token()
 
+@scheduler.scheduled_job("interval", id="save_rooms", minutes=15)
+async def save_rooms():
+    from jarvis.tools.matrix.base import client
+    if client:
+        await client.command_save_client()
+
 
 def start_matrix() -> Task:
     from jarvis.tools.matrix.base import main as matrix_main, client as matrix_client
