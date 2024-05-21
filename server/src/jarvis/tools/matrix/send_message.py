@@ -18,7 +18,9 @@ class MatrixSendMessageInput(BaseModel):
 
 class MatrixSendMessageTool(BaseTool):
     name = "matrix_send_message"
-    description = "Send a message to a room, group or person."
+    description = """Use this when you want to send a single message to a room, group or person.
+When sending a message, talk as if you're me. For example, when asked to "send a message to John asking if he wants to dinner tonight",
+consider "do you want to dinner tonight?" as the message."""
     args_schema: Type[BaseModel] = MatrixSendMessageInput
 
     def __init__(self, **kwds):

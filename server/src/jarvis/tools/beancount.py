@@ -68,18 +68,12 @@ class BeancountAddTransactionTool(BaseTool):
 
             # Create a new tree object with the updated file
             tree = repo.create_git_tree(
-                [
-                    InputGitTreeElement(
-                        file_path, type="blob", mode="100644", sha=blob.sha
-                    )
-                ],
+                [InputGitTreeElement(file_path, type="blob", mode="100644", sha=blob.sha)],
                 base_tree=commit.tree,
             )
 
             # Create a new commit object with the updated tree and parent commit
-            new_commit = repo.create_git_commit(
-                "From JARVIS", tree=tree, parents=[commit]
-            )
+            new_commit = repo.create_git_commit("From JARVIS", tree=tree, parents=[commit])
 
             head_ref.edit(sha=new_commit.sha, force=False)
         except Exception as e:
