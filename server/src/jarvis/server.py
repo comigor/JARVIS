@@ -26,6 +26,7 @@ from jarvis.tools.google.base import refresh_google_token
 from jarvis.tools.matrix.toolkit import MatrixToolkit
 from jarvis.tools.beancount import BeancountAddTransactionTool
 from jarvis.tools.schedule_action import ScheduleActionTool
+from jarvis.tools.long_term_facts_memory import SaveLongTermFactsMemoryTool, LoadLongTermFactsMemoryTool
 from jarvis.graph import generate_graph
 
 
@@ -54,10 +55,13 @@ Weeks start on sunday and end on saturday. Consider local holidays and treat the
 
 Think and execute tools in English, but but always answer in brazilian portuguese."""
 
+llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
 
 tools = [
     ScheduleActionTool(),
     BeancountAddTransactionTool(),
+    SaveLongTermFactsMemoryTool(llm=llm),
+    LoadLongTermFactsMemoryTool(llm=llm),
 ]
 tools += HomeAssistantToolkit(
     base_url=os.environ["HOMEASSISTANT_URL"], api_key=os.environ["HOMEASSISTANT_KEY"]
@@ -78,7 +82,6 @@ tools += [
     ),
 ]
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
 llm_with_tools = llm.bind_tools(tools)
 
 
