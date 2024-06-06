@@ -856,6 +856,25 @@ docs = ["Sphinx", "furo"]
 test = ["objgraph", "psutil"]
 
 [[package]]
+name = "groq"
+version = "0.8.0"
+description = "The official Python library for the groq API"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "groq-0.8.0-py3-none-any.whl", hash = "sha256:f5e4e892d45001241a930db451e633ca1f0007e3f749deaa5d7360062fcd61e3"},
+    {file = "groq-0.8.0.tar.gz", hash = "sha256:37ceb2f706bd516d0bfcac8e89048a24b375172987a0d6bd9efb521c54f6deff"},
+]
+
+[package.dependencies]
+anyio = ">=3.5.0,<5"
+distro = ">=1.7.0,<2"
+httpx = ">=0.23.0,<1"
+pydantic = ">=1.9.0,<3"
+sniffio = "*"
+typing-extensions = ">=4.7,<5"
+
+[[package]]
 name = "grpcio"
 version = "1.63.0"
 description = "HTTP/2-based RPC framework"
@@ -1227,6 +1246,21 @@ texttospeech = ["google-cloud-texttospeech (>=2.16.3,<3.0.0)"]
 translate = ["google-cloud-translate (>=3.15.3,<4.0.0)"]
 vertexaisearch = ["google-cloud-discoveryengine (>=0.11.11,<0.12.0)"]
 vision = ["google-cloud-vision (>=3.7.2,<4.0.0)"]
+
+[[package]]
+name = "langchain-groq"
+version = "0.1.5"
+description = "An integration package connecting Groq and LangChain"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "langchain_groq-0.1.5-py3-none-any.whl", hash = "sha256:f13fbec6143047a352ff2bbd2241e4b4b9559c6f799a26e6da5f2b0d6e02bff5"},
+    {file = "langchain_groq-0.1.5.tar.gz", hash = "sha256:af166fd30c60006dba4345bc9a59edfa2745edcb5b3e0bd957abd3d09416bbc5"},
+]
+
+[package.dependencies]
+groq = ">=0.4.1,<1"
+langchain-core = ">=0.1.45,<0.3"
 
 [[package]]
 name = "langchain-openai"
@@ -2817,4 +2851,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.1"
-content-hash = "ad412e4e60b8033d7551c4ea05bbd8605f5c31c38b296b6e713e27c66fc1e3b5"
+content-hash = "c8e5b4f96f04121c44d255f55118c7dc7ccc5952699af425659ce9ff2c718732"

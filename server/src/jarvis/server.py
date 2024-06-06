@@ -12,6 +12,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langchain.agents import Tool
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
@@ -79,6 +80,9 @@ tools += [
 ]
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
+if os.environ.get("GROQ_API_KEY"):
+    llm = ChatGroq(model="llama3-70b-8192", temperature=0, streaming=False, timeout=30)
+
 llm_with_tools = llm.bind_tools(tools)
 
 
