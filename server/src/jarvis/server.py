@@ -18,6 +18,7 @@ from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from langserve import add_routes
 
@@ -79,10 +80,13 @@ tools += [
     ),
 ]
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
-if os.environ.get("GROQ_API_KEY"):
-    llm = ChatGroq(model="llama3-70b-8192", temperature=0, streaming=False, timeout=30)
+def get_llm() -> BaseChatModel:
+    if os.environ.get("GROQ_API_KEY"):
+        return ChatGroq(model="llama3-70b-8192", temperature=0, streaming=False, timeout=30)
+    else:
+        return ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
 
+llm = get_llm()
 llm_with_tools = llm.bind_tools(tools)
 
 
