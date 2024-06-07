@@ -1,6 +1,8 @@
 """The OpenAI Conversation integration."""
+
 # For relative imports to work in Python 3.6
 import os, sys
+
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 import logging
@@ -26,6 +28,7 @@ logging.basicConfig(
 )
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up JARVIS from a config entry."""
@@ -66,12 +69,12 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         """Process a sentence."""
         conversation_id = user_input.conversation_id or ulid.ulid()
 
-        _LOGGER.info('STARTING CONVERSATION')
+        _LOGGER.info("STARTING CONVERSATION")
         _LOGGER.info(conversation_id)
 
         last_msg_text = None
         try:
-            _LOGGER.info('FULL ROUND:')
+            _LOGGER.info("FULL ROUND:")
             json_request = {
                 "input": user_input.text,
                 "config": {"configurable": {"session_id": conversation_id}},
@@ -81,7 +84,6 @@ class JARVISAgent(conversation.AbstractConversationAgent):
             response = self.http_client.post(
                 "http://192.168.10.20:10055/invoke",
                 json=json_request,
-
             )
 
             json_obj = response.json()
