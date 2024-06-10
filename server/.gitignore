@@ -3,3 +3,4 @@ matrix_credentials.json
 credentials.json
 token.json
 *.pickle
+chat_history.json
