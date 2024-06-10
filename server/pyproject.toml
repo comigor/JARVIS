@@ -35,6 +35,7 @@ matrix-nio = {extras = ["e2e"], git = "https://github.com/comigor/matrix-nio.git
 fuzzywuzzy = "^0.18.0"
 neo4j = "^5.20.0"
 zep-cloud = "^1.0.3"
+langchain-groq = "^0.1.5"
 
 [build-system]
 requires = ["poetry-core"]

@@ -11,12 +11,14 @@ import json
 
 from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
 from langchain_core.messages.base import messages_to_dict
 from langchain_core.runnables import RunnableLambda
 from langchain_core.runnables.config import RunnableConfig
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_experimental.utilities import PythonREPL
+from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain.agents import Tool
 
@@ -73,8 +75,18 @@ tools += [
 ]
 
 
-graph = generate_graph(llm, tools)
+def get_llm() -> BaseChatModel:
+    if os.environ.get("GROQ_API_KEY"):
+        return ChatGroq(
+            model="llama3-70b-8192", temperature=0, streaming=False, timeout=30
+        )
+    else:
+        return ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
 
+
+llm = get_llm()
+
+graph = generate_graph(llm, tools)
 
 # from zep_cloud.langchain import ZepChatMessageHistory
 # from zep_cloud.client import Zep
