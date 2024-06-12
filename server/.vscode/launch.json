@@ -12,7 +12,8 @@
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src",
-                "LANGCHAIN_TRACING_V2": "true"
+                "LANGCHAIN_TRACING_V2": "true",
+                "DEBUG": "True",
             }
         },
         {
@@ -23,7 +24,8 @@
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src",
-                "LANGCHAIN_TRACING_V2": "true"
+                "LANGCHAIN_TRACING_V2": "true",
+                "DEBUG": "True",
             }
         }
     ]

@@ -1,84 +1,84 @@
-from typing import Sequence, Any
+from typing import Optional, List
 import json
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import BaseMessage, AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, AIMessage
 from langchain_core.messages.utils import messages_from_dict
-from langchain_core.runnables import RunnableLambda, Runnable
+from langchain_core.messages.base import messages_to_dict
 from langchain_core.runnables.config import RunnableConfig
-from langchain_core.runnables.passthrough import RunnablePassthrough
-
-from jarvis.graph.types import AgentState
 
 
-contexts_cache = {}
+summaries_cache: dict[str, List[BaseMessage]] = {}
 
 
-def retrieve_full_chat_history(_input: AgentState) -> Sequence[BaseMessage]:
-    full_chat_history = []
-    with open("chat_history.json", "r") as file:
-        full_chat_history = messages_from_dict(json.loads(file.read()))
-
-    return full_chat_history
-
-
-def concat_summarize_command(
-    full_chat_history: Sequence[BaseMessage],
-) -> Sequence[BaseMessage]:
-    return [
-        *full_chat_history,
-        HumanMessage(
-            content=(
-                "Summarize our entire conversation so far in less than 100 words. "
-                "Make sure to state all relevant facts."
-            ),
-        ),
-    ]
-
-
-def cache_context(llm_output: AIMessage, config: RunnableConfig) -> AIMessage:
-    session_id = config.get("configurable", {}).get("session_id", "fallback")
-    contexts_cache[session_id] = llm_output
-    return llm_output
-
-
-def to_state_again(v: dict[str, Any]) -> AgentState:
-    return AgentState(
-        full_chat_history=v["full_chat_history"],
-        compressed_context=[
-            *v["state"]["compressed_context"],
+async def _call_llm(
+    llm: BaseChatModel,
+    filtered_chat_history: List[BaseMessage],
+    config: Optional[RunnableConfig] = None,
+) -> BaseMessage:
+    return await llm.ainvoke(
+        input=[
+            # SystemMessage(
+            #     content="You are a writer specialized in creating good summaries of conversations."
+            # ),
+            *filtered_chat_history,
             SystemMessage(
-                content=f"""Consider the following conversation context:\n{v["context_message"].content}"""
+                content=(
+                    "Summarize this conversation so far in less than 100 words, in English. "
+                    "Make sure to state all relevant facts from the user. Assume your last message is correct."
+                ),
             ),
         ],
-        messages=[],  # Add nothing new
+        config=config,
     )
 
 
-def compressor_chain(
+async def retrieve_filtered_chat_history() -> List[BaseMessage]:
+    filtered_chat_history = []
+    try:
+        with open("chat_history.json", "r") as file:
+            filtered_chat_history = messages_from_dict(json.loads(file.read()))
+    except Exception:
+        ...
+
+    return filtered_chat_history
+
+
+async def get_summary(
     llm: BaseChatModel,
-) -> Runnable[AgentState, Runnable[AgentState, AgentState]]:
-    def check_cache(_state: AgentState, config: RunnableConfig) -> Runnable:
-        session_id = config.get("configurable", {}).get("session_id", "fallback")
+    filtered_chat_history: List[BaseMessage],
+    config: Optional[RunnableConfig] = None,
+) -> List[BaseMessage]:
+    if len(filtered_chat_history) == 0:
+        return []
 
-        # TODO: avoid retrieving full_chat_history 2x
+    session_id = (config or {}).get("configurable", {}).get("session_id", "fallback")
+    if session_id not in summaries_cache:
+        session_id = (
+            (config or {}).get("configurable", {}).get("session_id", "fallback")
+        )
+        response = await _call_llm(llm, filtered_chat_history, config)
+        summaries_cache[session_id] = [
+            SystemMessage(
+                content=f"""Consider the following conversation context:\n{response.content}"""
+            ),
+        ]
 
-        if session_id in contexts_cache:
-            return {
-                "state": RunnablePassthrough(),
-                "full_chat_history": RunnableLambda(retrieve_full_chat_history),
-                "context_message": RunnableLambda(
-                    lambda _x: contexts_cache[session_id]
-                ),
-            } | RunnableLambda(to_state_again)
-        else:
-            return {
-                "state": RunnablePassthrough(),
-                "full_chat_history": RunnableLambda(retrieve_full_chat_history),
-                "context_message": RunnableLambda(retrieve_full_chat_history)
-                | RunnableLambda(concat_summarize_command)
-                | llm
-                | RunnableLambda(cache_context),
-            } | RunnableLambda(to_state_again)
+    return summaries_cache[session_id]
 
-    return RunnableLambda(check_cache)
+
+async def persist_history(full_chat_history: List[BaseMessage]) -> None:
+    deduped = [
+        i for n, i in enumerate(full_chat_history) if i not in full_chat_history[:n]
+    ]
+
+    filtered_messages = list(
+        filter(
+            lambda m: isinstance(m, HumanMessage)
+            or (isinstance(m, AIMessage) and len(m.tool_calls) == 0),
+            deduped,
+        )
+    )
+
+    with open("chat_history.json", "w") as file:
+        file.write(json.dumps(messages_to_dict(filtered_messages)))
