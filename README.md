@@ -41,9 +41,9 @@ poetry run matrix-commander --credentials "$PWD/jarvis-config/credentials.json" 
 * fix config flow
 * allow selecting abilities on config flow
 * integrate to local LLMs ([ref](https://www.reddit.com/r/homeassistant/comments/17h6zgh/comment/k6olxlu/?utm_source=share&utm_medium=web2x&context=3))
-* audio warning to speakers
 * control music
 * ifood?
     * https://gist.github.com/donkawechico/30399f34fa88f0c560f9eb0c756d2efa
     * https://community.home-assistant.io/t/fetching-a-token-every-hour/167434/8
 * plex? (+sonarr/radarr)
+* checkpointer on graph

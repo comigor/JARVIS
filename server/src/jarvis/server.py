@@ -21,6 +21,7 @@ from jarvis.tools.matrix.toolkit import MatrixToolkit
 from jarvis.tools.beancount import BeancountAddTransactionTool
 from jarvis.tools.schedule_action import ScheduleActionTool
 from jarvis.graph.graph import generate_graph
+from jarvis.tools.overseer.toolkit import OverseerToolkit
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,6 +74,9 @@ tools += [
         func=PythonREPL().run,
     ),
 ]
+tools += OverseerToolkit(
+    base_url=os.environ["OVERSEER_URL"], api_key=os.environ["OVERSEER_API_KEY"]
+).get_tools()
 
 graph = generate_graph(llm, tools)
 

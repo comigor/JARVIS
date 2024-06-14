@@ -113,7 +113,7 @@ def generate_graph(
             (config or {}).get("configurable", {}).get("session_id", "fallback")
         )
         if session_id in store:
-            # Do not retrieve histopry again, as messages will be populated
+            # Do not retrieve history again, as messages will be populated
             return state
 
         return state.copy_with(
@@ -150,7 +150,6 @@ def generate_graph(
     async def persist_messages(
         state: AgentState, config: Optional[RunnableConfig] = None
     ) -> AgentState:
-        # TODO: append state.messages
         await persist_history([*state.filtered_chat_history, *state.messages])
         session_id = (
             (config or {}).get("configurable", {}).get("session_id", "fallback")
