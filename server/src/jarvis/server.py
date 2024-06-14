@@ -83,7 +83,13 @@ graph = generate_graph(llm, tools)
 
 app = FastAPI()
 add_routes(
-    app, graph | RunnableLambda(lambda x: x["persist_messages"]["messages"][-1].content)
+    app,
+    graph
+    | RunnableLambda(
+        lambda x: x.get("messages", x.get("persist_messages").get("messages"))[
+            -1
+        ].content
+    ),
 )
 
 if not DEBUG:
