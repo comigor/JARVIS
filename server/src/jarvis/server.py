@@ -81,15 +81,17 @@ tools += OverseerToolkit(
 
 graph = generate_graph(llm, tools)
 
+
+def aaaaaaaaaaaaaa(x):
+    _LOGGER.info(x)
+    print(x)
+    return x.get("messages", x.get("persist_messages", {}).get("messages"))[-1].content
+
+
 app = FastAPI()
 add_routes(
     app,
-    graph
-    | RunnableLambda(
-        lambda x: x.get("messages", x.get("persist_messages").get("messages"))[
-            -1
-        ].content
-    ),
+    graph | RunnableLambda(aaaaaaaaaaaaaa),
 )
 
 if not DEBUG:
