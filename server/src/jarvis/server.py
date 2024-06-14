@@ -11,6 +11,7 @@ from langchain_experimental.utilities import PythonREPL
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain.agents import Tool
+from langchain_core.runnables.base import RunnableLambda
 
 from langserve import add_routes
 
@@ -81,7 +82,9 @@ tools += OverseerToolkit(
 graph = generate_graph(llm, tools)
 
 app = FastAPI()
-add_routes(app, graph)
+add_routes(
+    app, graph | RunnableLambda(lambda x: x["persist_messages"]["messages"][-1].content)
+)
 
 if not DEBUG:
     from apscheduler.schedulers.background import BackgroundScheduler
