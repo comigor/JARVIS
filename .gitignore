@@ -133,3 +133,4 @@ jarvis-config/*
 !jarvis-config/jarvis.conf.sample
 token.json
 credentials.json
+chat_history.json

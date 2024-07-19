@@ -38,15 +38,14 @@ DEBUG = os.environ.get("DEBUG")
 
 
 def get_llm() -> BaseChatModel:
-    if DEBUG:
-        return ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
-
-    if os.environ.get("GROQ_API_KEY"):
-        return ChatGroq(
-            model="llama3-70b-8192", temperature=0, streaming=False, timeout=30
-        )
-    else:
-        return ChatOpenAI(model="gpt-4o", temperature=0, streaming=False, timeout=30)
+    # if DEBUG:
+    #     return ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=False, timeout=30)
+    # if os.environ.get("GROQ_API_KEY"):
+    #     return ChatGroq(
+    #         model="llama3-70b-8192", temperature=0, streaming=False, timeout=30
+    #     )
+    # else:
+    return ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=False, timeout=30)
 
 
 llm = get_llm()
