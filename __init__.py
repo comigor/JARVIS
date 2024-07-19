@@ -76,7 +76,7 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         try:
             _LOGGER.info("FULL ROUND:")
             json_request = {
-                "input": user_input.text,
+                "input": {"question": user_input.text},
                 "config": {"configurable": {"session_id": conversation_id}},
             }
             _LOGGER.info(json_request)
