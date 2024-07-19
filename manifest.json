@@ -9,6 +9,6 @@
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "requirements": [
-    "httpx==0.26.0"
+    "httpx==0.27.0"
   ]
 }
