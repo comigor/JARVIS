@@ -1,5 +1,6 @@
 from typing import Optional, List
 import json
+import os
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, AIMessage
@@ -34,6 +35,10 @@ async def _call_llm(
 
 
 async def retrieve_filtered_chat_history() -> List[BaseMessage]:
+    history_count = -1 * int(os.environ.get("MESSAGE_HISTORY_COUNT", 0))
+    if history_count <= 0:
+        return []
+
     filtered_chat_history = []
     try:
         with open("chat_history.json", "r") as file:
@@ -41,7 +46,7 @@ async def retrieve_filtered_chat_history() -> List[BaseMessage]:
     except Exception:
         ...
 
-    return filtered_chat_history
+    return filtered_chat_history[history_count:]
 
 
 async def get_summary(

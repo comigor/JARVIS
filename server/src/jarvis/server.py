@@ -45,7 +45,7 @@ def get_llm() -> BaseChatModel:
     #         model="llama3-70b-8192", temperature=0, streaming=False, timeout=30
     #     )
     # else:
-    return ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=False, timeout=30)
+    return ChatOpenAI(model="gpt-4o-mini", temperature=0.15, streaming=False, timeout=30)
 
 
 llm = get_llm()

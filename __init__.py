@@ -92,15 +92,16 @@ class JARVISAgent(conversation.AbstractConversationAgent):
             last_msg_text = (
                 json_obj.get("output")
                 if response.status_code == 200
-                else f"Sorry, I can't do that (got error {response.status_code})"
+                else f"Sorry, error {response.status_code}."
             )
 
             _LOGGER.info(f"msg: {last_msg_text}")
         except Exception as err:
             intent_response = intent.IntentResponse(language=user_input.language)
+            _LOGGER.error(f"Sorry, there was an error: {err}\n{traceback.format_exc()}")
             intent_response.async_set_error(
-                intent.IntentResponseErrorCode.UNKNOWN,
-                f"Sorry, there was an error: {err}\n{traceback.format_exc()}",
+                intent.IntentResponseErrorCode.FAILED_TO_HANDLE,
+                f"Sorry, error.",
             )
             return conversation.ConversationResult(
                 response=intent_response, conversation_id=conversation_id

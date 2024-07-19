@@ -1,6 +1,7 @@
 from typing import List, Any, Optional, Literal, Callable, Awaitable
 from datetime import datetime
 import uuid
+import os
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import (
@@ -126,11 +127,14 @@ def generate_graph(
         async def _assoc_summary(
             state: AgentState, config: Optional[RunnableConfig] = None
         ) -> AgentState:
-            return state.copy_with(
-                append_system_messages=await get_summary(
-                    llm, state.filtered_chat_history, config
-                ),
-            )
+            if len(state.filtered_chat_history or []) > 0:
+                return state.copy_with(
+                    append_system_messages=await get_summary(
+                        llm, state.filtered_chat_history, config
+                    ),
+                )
+
+            return state
 
         return _assoc_summary
 
@@ -140,9 +144,15 @@ def generate_graph(
         session_id = (
             (config or {}).get("configurable", {}).get("session_id", "fallback")
         )
+
+        msg_context = store.get(session_id, [])
+        msg_context_count = -1 * int(os.environ.get("MESSAGE_CONTEXT_COUNT", 0))
+        if msg_context_count <= 0:
+            msg_context = []
+
         return state.copy_with(
             append_messages=[
-                *store.get(session_id, []),
+                *msg_context[msg_context_count:],
                 HumanMessage(content=state.question, id=str(uuid.uuid4())),
             ],
         )
