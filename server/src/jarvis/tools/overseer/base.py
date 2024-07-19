@@ -4,7 +4,7 @@ from langchain_core.tools import BaseTool
 
 
 class OverseerBaseTool(BaseTool):
-    client: httpx.Client = Field(default_factory=lambda: httpx.Client(timeout=5))
+    client: httpx.Client = Field(default_factory=lambda: httpx.Client(timeout=45))
     base_url: str = Field(default_factory=lambda: "")
     headers: dict = Field(default_factory=lambda: {})
 
