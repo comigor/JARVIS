@@ -25,16 +25,15 @@ from jarvis.graph.graph import generate_graph
 from jarvis.tools.overseer.toolkit import OverseerToolkit
 
 
+DEBUG = os.environ.get("DEBUG")
+
+
 _LOGGER = logging.getLogger(__name__)
-
-
 logging.basicConfig(
     format="%(levelname)s [%(asctime)s] %(name)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.INFO,
+    level=logging.DEBUG if DEBUG else logging.INFO,
 )
-
-DEBUG = os.environ.get("DEBUG")
 
 
 def get_llm() -> BaseChatModel:
