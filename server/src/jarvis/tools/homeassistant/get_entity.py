@@ -1,5 +1,6 @@
 import logging
 import json
+import traceback
 from typing import Type
 from pydantic import BaseModel, Field
 
@@ -23,12 +24,20 @@ class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
         super().__init__(**kwds)
 
     def _run(self, entity: str) -> str:
-        response = self.client.get(
-            f"{self.base_url}/api/states/{entity}",
-            headers=self.headers,
-        )
-        json_obj = response.json()
-        _LOGGER.debug(json_obj)
+        try:
+            _LOGGER.debug("igor0")
+            response = self.client.get(
+                f"{self.base_url}/api/states/{entity}",
+                headers=self.headers,
+            )
+            _LOGGER.debug("igor1")
+            json_obj = response.json()
+            _LOGGER.debug(json_obj)
+            _LOGGER.debug("igor2")
+        except Exception as err:
+            _LOGGER.debug(response)
+            _LOGGER.debug(err)
+            _LOGGER.error(f"Sorry, there was an error: {err}\n{traceback.format_exc()}")
         return (
             json.dumps(json_obj)
             if response.status_code == 200

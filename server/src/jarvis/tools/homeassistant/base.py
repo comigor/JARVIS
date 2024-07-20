@@ -15,3 +15,14 @@ class HomeAssistantBaseTool(BaseTool):
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
+
+# import os
+# import httpx
+# client = httpx.Client(timeout=90, follow_redirects=True, verify=False)
+# r = client.get(
+#     f"{os.environ['HOMEASSISTANT_URL']}/api/states/light.bedroom",
+#     headers = {
+#         "Authorization": f"Bearer {os.environ['HOMEASSISTANT_KEY']}",
+#         "Content-Type": "application/json",
+#     },
+# )
