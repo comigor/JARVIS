@@ -45,18 +45,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-class JARVISAgent(conversation.AbstractConversationAgent):
+class JARVISAgent(conversation.models.AbstractConversationAgent):
     """JARVIS conversation agent."""
 
     hass: HomeAssistant
     entry: ConfigEntry
-    http_client: httpx.Client
+    http_client: httpx.AsyncClient
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the agent."""
         self.hass = hass
         self.entry = entry
-        self.http_client = httpx.Client(timeout=60)
+        self.http_client = httpx.AsyncClient(timeout=30)
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -81,10 +81,12 @@ class JARVISAgent(conversation.AbstractConversationAgent):
             }
             _LOGGER.info(json_request)
 
-            response = self.http_client.post(
+            response = await self.http_client.post(
                 "http://192.168.10.20:10055/invoke",
                 json=json_request,
             )
+
+            _LOGGER.info(repr(response))
 
             json_obj = response.json()
             _LOGGER.info(json_obj)
