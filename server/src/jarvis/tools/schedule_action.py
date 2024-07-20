@@ -28,7 +28,7 @@ For example, when the user request to "set an alarm for 4p.m.", the instructions
 and when the user request to "at 4p.m, send a message to John saying wake up", the instructions should be "send a message to John: wake up"."""
     args_schema: Type[BaseModel] = ScheduleActionInput
 
-    client: httpx.Client = Field(default_factory=lambda: httpx.Client(timeout=90))
+    client: httpx.Client = Field(default_factory=lambda: httpx.Client(timeout=90, follow_redirects=True, verify=False))
     scheduler: BackgroundScheduler = Field(default_factory=lambda: BackgroundScheduler())
 
     class Config:

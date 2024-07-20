@@ -56,7 +56,7 @@ class JARVISAgent(conversation.AbstractConversationAgent):
         """Initialize the agent."""
         self.hass = hass
         self.entry = entry
-        self.http_client = httpx.Client(timeout=60)
+        self.http_client = httpx.Client(timeout=60, follow_redirects=True, verify=False)
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:

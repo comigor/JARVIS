@@ -4,7 +4,7 @@ from langchain_core.tools import BaseTool
 
 
 class HomeAssistantBaseTool(BaseTool):
-    client: httpx.Client = Field(default_factory=lambda: httpx.Client(timeout=45))
+    client: httpx.Client = Field(default_factory=lambda: httpx.Client(timeout=15, follow_redirects=True, verify=False))
     base_url: str = Field(default_factory=lambda: "")
     headers: dict = Field(default_factory=lambda: {})
 
