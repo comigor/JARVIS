@@ -17,8 +17,8 @@ class SaveLongTermFactsMemoryInput(BaseModel):
 
 
 class SaveLongTermFactsMemoryTool(BaseTool):
-    name = "save_long_term_facts_memory"
-    description = """Use this when you detect the user input is one or more facts.
+    name: str = "save_long_term_facts_memory"
+    description: str = """Use this when you detect the user input is one or more facts.
 Facts will be persisted and should be remembered forever or until applicable."""
     args_schema: Type[BaseModel] = SaveLongTermFactsMemoryInput
 
@@ -44,8 +44,8 @@ class LoadLongTermFactsMemoryInput(BaseModel):
 
 
 class LoadLongTermFactsMemoryTool(BaseTool):
-    name = "load_long_term_facts_memory"
-    description = """Use this when you want to recall facts."""
+    name: str = "load_long_term_facts_memory"
+    description: str = """Use this when you want to recall facts."""
     args_schema: Type[BaseModel] = LoadLongTermFactsMemoryInput
 
     vectorstore: Neo4jVector = Field()

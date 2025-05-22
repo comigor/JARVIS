@@ -1,16 +1,13 @@
-[tool.poetry]
+[project]
 name = "jarvis"
 version = "0.1.0"
 description = ""
 authors = ["Igor Borges <igor@borges.dev>"]
-license = "Apache License 2.0"
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "3.12.1"
-homeassistant = "2024.6.4"
-httpx = "^0.27.0"
+requires-python = ">=3.13"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+dependencies = [
+    "homeassistant>=2024.6.4",
+    "httpx>=0.27.0",
+]

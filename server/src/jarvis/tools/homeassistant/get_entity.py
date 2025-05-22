@@ -15,8 +15,8 @@ class HomeAssistantEntityInput(BaseModel):
 
 
 class HomeAssistantGetEntityTool(HomeAssistantBaseTool):
-    name = "home_assistant_get_entity_state"
-    description = "Get the current state of a single entity. States can also contain useful attributes about said entity."
+    name: str = "home_assistant_get_entity_state"
+    description: str = "Get the current state of a single entity. States can also contain useful attributes about said entity."
     args_schema: Type[BaseModel] = HomeAssistantEntityInput
 
     def __init__(self, **kwds):

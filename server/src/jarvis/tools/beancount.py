@@ -23,8 +23,8 @@ class BeancountAddTransactionInput(BaseModel):
 
 
 class BeancountAddTransactionTool(BaseTool):
-    name = "beacount_add_transaction"
-    description = "Add a transaction to personal beancount accounting ledger."
+    name: str = "beacount_add_transaction"
+    description: str = "Add a transaction to personal beancount accounting ledger."
     args_schema: Type[BaseModel] = BeancountAddTransactionInput
 
     def __init__(self, **kwds):

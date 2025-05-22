@@ -8,7 +8,6 @@ import os
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_experimental.utilities import PythonREPL
-from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain.agents import Tool
 from langchain_core.runnables.base import RunnableLambda
@@ -44,7 +43,9 @@ def get_llm() -> BaseChatModel:
     #         model="llama3-70b-8192", temperature=0, streaming=False, timeout=30
     #     )
     # else:
-    return ChatOpenAI(model="gpt-4o-mini", temperature=0.15, streaming=False, timeout=30)
+    return ChatOpenAI(
+        model="gpt-4o-mini", temperature=0.15, streaming=False, timeout=30
+    )
 
 
 llm = get_llm()

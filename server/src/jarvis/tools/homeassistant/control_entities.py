@@ -25,8 +25,8 @@ class HomeAssistantControlEntitiesInput(BaseModel):
 
 
 class HomeAssistantControlEntitiesTool(HomeAssistantBaseTool):
-    name = "home_assistant_control_entities"
-    description = "Useful when you want to control (e.g. turn on or off) one or more Home Assistant entities."
+    name: str = "home_assistant_control_entities"
+    description: str = "Useful when you want to control (e.g. turn on or off) one or more Home Assistant entities."
     args_schema: Type[BaseModel] = HomeAssistantControlEntitiesInput
 
     def __init__(self, **kwds):

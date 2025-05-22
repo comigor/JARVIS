@@ -13,8 +13,8 @@ class OverseerSearchSchema(BaseModel):
 
 
 class OverseerSearchTool(OverseerBaseTool):
-    name = "overseer_search"
-    description = "Returns a list of movies or TV shows and their information given a search query."
+    name: str = "overseer_search"
+    description: str = "Returns a list of movies or TV shows and their information given a search query."
     args_schema: Type[BaseModel] = OverseerSearchSchema
 
     def __init__(self, **kwds):

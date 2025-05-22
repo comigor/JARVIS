@@ -18,8 +18,8 @@ class ListEventsSchema(BaseModel):
 
 
 class ListEventsTool(BaseTool):
-    name = "google_calendar_tool"
-    description = "List all events on Google Calendar for a specific time range"
+    name: str = "google_calendar_tool"
+    description: str = "List all events on Google Calendar for a specific time range"
     args_schema: Type[BaseModel] = ListEventsSchema
 
     def __init__(self, **kwds):
@@ -68,8 +68,8 @@ class CreateEventSchema(BaseModel):
 
 
 class CreateEventTool(BaseTool):
-    name = "create_google_calendar_event_tool"
-    description = "Create an event on Google Calendar"
+    name: str = "create_google_calendar_event_tool"
+    description: str = "Create an event on Google Calendar"
     args_schema: Type[BaseModel] = CreateEventSchema
 
     def __init__(self, **kwds):

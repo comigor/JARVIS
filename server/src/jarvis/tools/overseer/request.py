@@ -21,8 +21,8 @@ class OverseerDownloadSchema(BaseModel):
 
 
 class OverseerDownloadTool(OverseerBaseTool):
-    name = "overseer_download"
-    description = "Download a movie or TV series by its ID."
+    name: str = "overseer_download"
+    description: str = "Download a movie or TV series by its ID."
     args_schema: Type[BaseModel] = OverseerDownloadSchema
 
     def __init__(self, **kwds):

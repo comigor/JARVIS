@@ -12,8 +12,8 @@ class HomeAssistantListEntitiesStateSchema(BaseModel): ...
 
 
 class HomeAssistantListAllEntitiesTool(HomeAssistantBaseTool):
-    name = "home_assistant_list_all_entities"
-    description = "Get an overview of all entities, including their IDs and state. States can also contain useful attributes about said entity."
+    name: str = "home_assistant_list_all_entities"
+    description: str = "Get an overview of all entities, including their IDs and state. States can also contain useful attributes about said entity."
     args_schema: Type[BaseModel] = HomeAssistantListEntitiesStateSchema
 
     def __init__(self, **kwds):

@@ -29,8 +29,8 @@ class ListGoogleTasksSchema(BaseModel):
 
 
 class ListTasksTool(BaseTool):
-    name = "google_list_tasks_tool"
-    description = "List tasks using Google Tasks API"
+    name: str = "google_list_tasks_tool"
+    description: str = "List tasks using Google Tasks API"
     args_schema: Type[BaseModel] = ListGoogleTasksSchema
 
     def __init__(self, **kwds):
@@ -90,8 +90,8 @@ class CreateTaskSchema(BaseModel):
 
 
 class CreateTaskTool(BaseTool):
-    name = "google_create_task_tool"
-    description = "Create a task using Google Tasks API"
+    name: str = "google_create_task_tool"
+    description: str = "Create a task using Google Tasks API"
     args_schema: Type[BaseModel] = CreateTaskSchema
 
     def __init__(self, **kwds):

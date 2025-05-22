@@ -1,48 +1,34 @@
-[tool.poetry]
+[project]
 name = "jarvis"
 version = "0.1.0"
 description = ""
 authors = ["Igor Borges <igor@borges.dev>"]
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "3.12.1"
+requires-python = ">=3.13"
 
-fastapi = "^0.110.2"
-uvicorn = "^0.29.0"
-sse-starlette = "^2.1.0"
-
-pydantic = "^1"
-langchain = "^0.2.3"
-langchain-core = "^0.2.5"
-langchain-community = "^0.2.4"
-langchain-openai = "^0.1.8"
-langchain-groq = "^0.1.5"
-langchain-experimental = "^0.0.60"
-langchain-google-community = "^1.0.5"
-langgraph = "^0.0.66"
-langserve = "^0.2.2"
-
-wikipedia = "^1.4.0"
-google-api-python-client = "^2.126.0"
-google-auth-httplib2 = "^0.2.0"
-google-auth-oauthlib = "^1.2.0"
-beautifulsoup4 = "^4.12.3"
-httpx = "^0.24.0"
-apscheduler = "^3.10.4"
-
-# Beancount
-pygithub = "^2.3.0"
-
-# Matrix
-# matrix-nio = {extras = ["e2e"], version = "^0.24.0"}
-matrix-nio = {extras = ["e2e"], git = "https://github.com/comigor/matrix-nio.git", rev = "9a102c954ebaedfd9b5c71de2db9a12b4001e10b"}
-fuzzywuzzy = "^0.18.0"
-
-neo4j = "^5.20.0"
-zep-cloud = "^1.0.3"
-aiosqlite = "^0.20.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+dependencies = [
+    "aiosqlite>=0.20.0",
+    "apscheduler>=3.10.4",
+    "beautifulsoup4>=4.12.3",
+    "fastapi>=0.110.2",
+    "google-api-python-client>=2.126.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.0",
+    "httpx>=0.24.0",
+    "langchain>=0.2.3",
+    "langchain-community>=0.2.4",
+    "langchain-core>=0.2.5",
+    "langchain-experimental>=0.0.60",
+    "langchain-google-community>=1.0.5",
+    "langchain-openai>=0.1.8",
+    "langgraph>=0.0.66",
+    "langserve>=0.2.2",
+    "matrix-nio[e2e]>=0.25.2",
+    "neo4j>=5.20.0",
+    "pygithub>=2.3.0",
+    "sse-starlette>=2.1.0",
+    "uvicorn>=0.29.0",
+    "wikipedia>=1.4.0",
+    "zep-cloud>=1.0.3",
+]

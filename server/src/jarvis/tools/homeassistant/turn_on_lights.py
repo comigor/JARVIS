@@ -24,8 +24,8 @@ class HomeAssistantTurnOnLightsInput(BaseModel):
 
 
 class HomeAssistantTurnOnLightsTool(HomeAssistantBaseTool):
-    name = "home_assistant_turn_on_lights"
-    description = "Turn on one or more lights, controlling their attributes, like color, brightness and transition duration."
+    name: str = "home_assistant_turn_on_lights"
+    description: str = "Turn on one or more lights, controlling their attributes, like color, brightness and transition duration."
     args_schema: Type[BaseModel] = HomeAssistantTurnOnLightsInput
 
     def __init__(self, **kwds):

@@ -18,8 +18,8 @@ class HomeAssistantNotifyAlexaInput(BaseModel):
 
 
 class HomeAssistantNotifyAlexaTool(HomeAssistantBaseTool):
-    name = "home_assistant_notify_alexa"
-    description = "Useful when you want to send/display/ring notification using Alexa, notify in real time."
+    name: str = "home_assistant_notify_alexa"
+    description: str = "Useful when you want to send/display/ring notification using Alexa, notify in real time."
     args_schema: Type[BaseModel] = HomeAssistantNotifyAlexaInput
 
     def __init__(self, **kwds):

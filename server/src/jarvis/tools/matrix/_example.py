@@ -320,7 +320,7 @@ async def login() -> AsyncClient:
         user_id = "@user:example.org"
         user_id = input(f"Enter your full user ID: [{user_id}] ")
 
-        device_name = "matrix-nio"
+        device_name: str = "matrix-nio"
         device_name = input(f"Choose a name for this device: [{device_name}] ")
 
         if not os.path.exists(STORE_PATH):

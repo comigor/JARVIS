@@ -2,7 +2,6 @@
 cd /app
 export PYTHONPATH=$PWD/src
 
-pip install poetry
-poetry install --no-root
+uv sync
 
-poetry run python -m jarvis.server
+uv run python -m jarvis.server
