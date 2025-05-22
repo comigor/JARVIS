@@ -3,7 +3,7 @@ from typing import Type, Any, Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from googleapiclient.discovery import build
-from langchain.tools import BaseTool
+from langchain_core.tools import BaseTool
 
 from jarvis.tools.google.base import authenticate_with_google
 

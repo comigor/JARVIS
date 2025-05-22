@@ -9,7 +9,7 @@ from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
-from langchain.agents import Tool
+from langchain_core.tools import Tool
 from langchain_core.runnables.base import RunnableLambda
 
 from langserve import add_routes
@@ -44,7 +44,7 @@ def get_llm() -> BaseChatModel:
     #     )
     # else:
     return ChatOpenAI(
-        model="gpt-4o-mini", temperature=0.15, streaming=False, timeout=30
+        model="gpt-4o-mini", temperature=0.15, streaming=False, request_timeout=30
     )
 
 

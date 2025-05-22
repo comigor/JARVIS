@@ -2,33 +2,33 @@
 name = "jarvis"
 version = "0.1.0"
 description = ""
-authors = ["Igor Borges <igor@borges.dev>"]
+authors = [{name = "Igor Borges", email = "igor@borges.dev"}]
 readme = "README.md"
 
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 
 dependencies = [
-    "aiosqlite>=0.20.0",
-    "apscheduler>=3.10.4",
-    "beautifulsoup4>=4.12.3",
-    "fastapi>=0.110.2",
-    "google-api-python-client>=2.126.0",
-    "google-auth-httplib2>=0.2.0",
-    "google-auth-oauthlib>=1.2.0",
-    "httpx>=0.24.0",
-    "langchain>=0.2.3",
-    "langchain-community>=0.2.4",
-    "langchain-core>=0.2.5",
-    "langchain-experimental>=0.0.60",
-    "langchain-google-community>=1.0.5",
-    "langchain-openai>=0.1.8",
-    "langgraph>=0.0.66",
-    "langserve>=0.2.2",
-    "matrix-nio[e2e]>=0.25.2",
-    "neo4j>=5.20.0",
-    "pygithub>=2.3.0",
-    "sse-starlette>=2.1.0",
-    "uvicorn>=0.29.0",
-    "wikipedia>=1.4.0",
-    "zep-cloud>=1.0.3",
+    "aiosqlite>=0.21.0",
+    "apscheduler>=3.11.0",
+    "beautifulsoup4>=4.13.4",
+    "fastapi>=0.115.12",
+    "google-api-python-client>=2.169.0",
+    "google-auth-httplib2>=0.2.0", # No change
+    "google-auth-oauthlib>=1.2.2",
+    "httpx>=0.28.1",
+    "langchain>=0.3.25",
+    "langchain-community>=0.3.24",
+    "langchain-core>=0.3.60",
+    "langchain-experimental>=0.3.4",
+    "langchain-google-community>=2.0.7",
+    "langchain-openai>=0.3.17",
+    "langgraph>=0.4.5",
+    "langserve>=0.3.1",
+    "matrix-nio[e2e]>=0.25.2", # No change
+    "neo4j>=5.28.1",
+    "pygithub>=2.6.1",
+    "sse-starlette>=2.3.5",
+    "uvicorn>=0.34.2",
+    "wikipedia>=1.4.0", # No change
+    "zep-cloud>=2.12.3",
 ]
