@@ -9,7 +9,7 @@ from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
-from langchain.agents import Tool
+from langchain_core.tools import StructuredTool
 from langchain_core.runnables.base import RunnableLambda
 
 from langserve import add_routes
@@ -63,12 +63,12 @@ tools += GoogleToolkit().get_tools()
 if os.environ.get("ENABLE_MATRIX"):
     tools += MatrixToolkit().get_tools()
 tools += [
-    Tool(
+    StructuredTool.from_function(
         name="wikipedia",
         description="A wrapper around Wikipedia. Useful for when you need to answer general questions about people, places, companies, facts, historical events, or other subjects. Input should be a search query.",
         func=WikipediaAPIWrapper().run,  # type: ignore
     ),
-    Tool(
+    StructuredTool.from_function(
         name="python_repl",
         description="A Python shell. Use this to execute python commands. Input should be a valid python command. Always print the last line or the value you want with `print(...)`.",
         func=PythonREPL().run,
